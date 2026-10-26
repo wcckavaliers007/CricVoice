@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CricVoice AI - Roster & Team Mapping</title>
+    <title>CricVoice AI - Live Scorecard & Voice Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -26,12 +26,14 @@
             50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.8); }
         }
         .listening-active { animation: pulse-glow 2s infinite; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
 
     <!-- Header -->
-    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between shadow-lg">
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-lg">
         <div class="flex items-center space-x-3">
             <div class="bg-emerald-600 text-white p-2 rounded-xl shadow-md">
                 <i class="fa-solid fa-microphone-lines text-xl"></i>
@@ -45,6 +47,10 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
+            <!-- Global Undo Button -->
+            <button id="btn-undo-header" onclick="undoLastAction()" disabled class="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-700 text-amber-300 px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-rotate-left"></i> Undo <span id="undo-count-badge" class="bg-amber-950 text-amber-400 text-[10px] px-1.5 py-0.2 rounded-full border border-amber-800">0</span>
+            </button>
             <button onclick="exportCSV()" class="bg-emerald-950 border border-emerald-800 text-emerald-300 hover:bg-emerald-900 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
                 <i class="fa-solid fa-download"></i> CSV
             </button>
@@ -65,7 +71,7 @@
             <button onclick="switchTab('analytics')" id="tab-analytics" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Analytics</button>
         </div>
 
-        <!-- TAB 0: TEAM & PLAYER MAPPING SETUP -->
+        <!-- TAB 0: SETUP & ROSTER MAPPING -->
         <div id="view-setup" class="flex flex-col gap-4">
             
             <!-- Step 1: Input Roster -->
@@ -99,17 +105,29 @@
                     </div>
                 </div>
 
+                <!-- Voice Confirmation Toggle -->
+                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-semibold text-white block">Voice Commentary Confirmation</span>
+                        <span class="text-[11px] text-slate-400">Review spoken commentary before committing to scorecard</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="confirm-mode-toggle" checked class="sr-only peer" onchange="toggleConfirmModeSetting(this.checked)">
+                        <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+
                 <!-- Player Mapping List -->
                 <div class="flex flex-col gap-2">
                     <div class="flex justify-between items-center">
-                        <label class="text-xs font-medium text-slate-400 uppercase">Players Roster (<span id="total-roster-count">22</span>)</label>
+                        <label class="text-xs font-medium text-slate-400 uppercase">Players Roster (<span id="total-roster-count">0</span>)</label>
                         <button onclick="addPlayerRow()" class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-900 px-2.5 py-1 rounded-lg transition">
                             <i class="fa-solid fa-plus mr-1"></i> Add Player
                         </button>
                     </div>
 
                     <div id="player-mapping-container" class="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
-                        <!-- Populated dynamically -->
+                        <!-- Dynamic Player Rows -->
                     </div>
                 </div>
 
@@ -127,8 +145,7 @@
 
                 <!-- Side-by-Side Container -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
-                    <!-- Team A Preview Card -->
+                    <!-- Team A Card -->
                     <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col gap-3">
                         <div class="pb-2 border-b border-slate-800 flex flex-col gap-1">
                             <span id="preview-team-a-title" class="font-bold text-sm text-emerald-400">Team A</span>
@@ -140,7 +157,7 @@
                         <div id="preview-team-a-players" class="flex flex-col gap-1.5 text-xs max-h-64 overflow-y-auto"></div>
                     </div>
 
-                    <!-- Team B Preview Card -->
+                    <!-- Team B Card -->
                     <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col gap-3">
                         <div class="pb-2 border-b border-slate-800 flex flex-col gap-1">
                             <span id="preview-team-b-title" class="font-bold text-sm text-amber-400">Team B</span>
@@ -151,7 +168,6 @@
                         </div>
                         <div id="preview-team-b-players" class="flex flex-col gap-1.5 text-xs max-h-64 overflow-y-auto"></div>
                     </div>
-
                 </div>
 
                 <button onclick="confirmAndStartMatch()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-2xl font-bold text-xs text-white transition shadow-lg shadow-emerald-900/40">
@@ -164,6 +180,7 @@
         <!-- TAB 1: LIVE ACTION -->
         <div id="view-live" class="hidden flex flex-col gap-4 max-w-md mx-auto w-full">
             
+            <!-- Live Match Banner -->
             <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 transform translate-x-4 -translate-y-4 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
                 
@@ -197,14 +214,19 @@
                 </div>
             </div>
 
+            <!-- Quick Squad Select Chips -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex flex-col gap-2">
                 <h3 class="text-xs font-semibold text-slate-400 uppercase">Quick Select Active Players</h3>
                 <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none" id="squad-quick-chips"></div>
             </div>
 
+            <!-- Voice Mic Control Section -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col items-center gap-4">
                 <div class="w-full flex justify-between items-center">
-                    <span class="text-xs font-semibold text-slate-400 uppercase">Microphone Voice Engine</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Voice Engine</span>
+                        <span id="confirm-badge" class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-2 py-0.5 rounded-full font-medium">Confirm: ON</span>
+                    </div>
                     <span id="mic-status" class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full">Ready</span>
                 </div>
 
@@ -213,24 +235,31 @@
                 </button>
 
                 <p id="transcript-display" class="text-sm text-center text-slate-300 italic min-h-[2.5rem] flex items-center justify-center px-4">
-                    Tap the mic and say e.g., "Arun is batting", "Four runs", or "Bumrah is bowling"
+                    Tap mic and speak, e.g. "Arun hit four runs", "Thoths is bowling", or "Wicket fall"
                 </p>
             </div>
 
+            <!-- Quick Scoring Presets -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl">
-                <h3 class="text-xs font-semibold text-slate-400 uppercase mb-3">Quick Scoring Presets</h3>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase">Quick Scoring Presets</h3>
+                    <button id="btn-undo-live" onclick="undoLastAction()" disabled class="text-xs text-amber-400 hover:text-amber-300 disabled:opacity-40 font-medium flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-left"></i> Undo Ball
+                    </button>
+                </div>
                 <div class="grid grid-cols-4 gap-2 text-xs">
-                    <button onclick="simulateCommentary('four runs')" class="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/40 py-2 rounded-xl font-semibold text-emerald-300 transition">Four 🏏</button>
-                    <button onclick="simulateCommentary('six runs')" class="bg-emerald-900/80 hover:bg-emerald-700 py-2 rounded-xl font-bold text-white transition shadow">Six 🚀</button>
-                    <button onclick="simulateCommentary('single taken')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">1 Run</button>
-                    <button onclick="simulateCommentary('dot ball')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">Dot</button>
-                    <button onclick="simulateCommentary('wide ball')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">Wide</button>
-                    <button onclick="simulateCommentary('wicket fall')" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800/40 py-2 rounded-xl font-semibold text-rose-300 transition">Wicket ☝️</button>
-                    <button onclick="simulateCommentary('two runs')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">2 Runs</button>
-                    <button onclick="simulateCommentary('three runs')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">3 Runs</button>
+                    <button onclick="handleCommentaryInput('four runs')" class="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/40 py-2 rounded-xl font-semibold text-emerald-300 transition">Four 🏏</button>
+                    <button onclick="handleCommentaryInput('six runs')" class="bg-emerald-900/80 hover:bg-emerald-700 py-2 rounded-xl font-bold text-white transition shadow">Six 🚀</button>
+                    <button onclick="handleCommentaryInput('single taken')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">1 Run</button>
+                    <button onclick="handleCommentaryInput('dot ball')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">Dot</button>
+                    <button onclick="handleCommentaryInput('wide ball')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">Wide</button>
+                    <button onclick="handleCommentaryInput('wicket fall')" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800/40 py-2 rounded-xl font-semibold text-rose-300 transition">Wicket ☝️</button>
+                    <button onclick="handleCommentaryInput('two runs')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">2 Runs</button>
+                    <button onclick="handleCommentaryInput('three runs')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">3 Runs</button>
                 </div>
             </div>
 
+            <!-- Ball-by-Ball Timeline -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex flex-col gap-3">
                 <h3 class="text-xs font-semibold text-slate-400 uppercase">Recent Ball-by-Ball Timeline</h3>
                 <div id="ball-feed" class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -297,13 +326,65 @@
 
     </main>
 
+    <!-- CONFIRMATION MODAL -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl flex flex-col gap-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-sm"></i> Confirm Commentary Action
+                </h3>
+                <button onclick="cancelPendingAction()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+                <p id="modal-transcript-text" class="text-xs text-slate-300 italic">"Four runs off the edge"</p>
+            </div>
+
+            <!-- Interpreted Details Edit Card -->
+            <div class="flex flex-col gap-2 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Striker:</span>
+                    <strong id="modal-striker" class="text-emerald-400 font-semibold">Arun</strong>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Bowler:</span>
+                    <strong id="modal-bowler" class="text-amber-400 font-semibold">Thoths</strong>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Outcome:</span>
+                    <select id="modal-outcome-select" class="bg-slate-950 border border-slate-800 text-white rounded-lg px-2 py-1 text-xs focus:outline-none">
+                        <option value="0">0 Runs (Dot)</option>
+                        <option value="1">1 Run</option>
+                        <option value="2">2 Runs</option>
+                        <option value="3">3 Runs</option>
+                        <option value="4">4 Runs (Boundary)</option>
+                        <option value="6">6 Runs (Six)</option>
+                        <option value="wide">Wide Ball (+1 Run)</option>
+                        <option value="wicket">Wicket Out ☝️</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-2">
+                <button onclick="cancelPendingAction()" class="bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-semibold text-slate-300 transition">
+                    <i class="fa-solid fa-trash mr-1"></i> Discard
+                </button>
+                <button onclick="commitPendingAction()" class="bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl text-xs font-bold text-white transition shadow-lg shadow-emerald-900/40">
+                    <i class="fa-solid fa-check mr-1"></i> Commit Ball
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Application Logic -->
     <script>
+        // Default Master Roster (24 Players total, including Ram & Thoths)
         let matchSetup = {
             date: new Date().toISOString().split('T')[0],
             matchNum: "Match 1",
             teamA: "Team A",
             teamB: "Team B",
+            confirmBeforeCommit: true,
             players: [
                 { name: "Arun", team: "Team A", isBowler: true, isCaptain: true },
                 { name: "Siva", team: "Team A", isBowler: true, isCaptain: false },
@@ -316,6 +397,7 @@
                 { name: "CFO", team: "Team A", isBowler: true, isCaptain: false },
                 { name: "Prash", team: "Team A", isBowler: true, isCaptain: false },
                 { name: "Rajesh", team: "Team A", isBowler: true, isCaptain: false },
+                { name: "Ram", team: "Team A", isBowler: false, isCaptain: false },
                 { name: "Viswa", team: "Team B", isBowler: false, isCaptain: true },
                 { name: "Sridhar", team: "Team B", isBowler: false, isCaptain: false },
                 { name: "Madhu", team: "Team B", isBowler: true, isCaptain: false },
@@ -326,7 +408,8 @@
                 { name: "Ponting", team: "Team B", isBowler: false, isCaptain: false },
                 { name: "Puppy", team: "Team B", isBowler: true, isCaptain: false },
                 { name: "Anand", team: "Team B", isBowler: false, isCaptain: false },
-                { name: "Abhi", team: "Team B", isBowler: true, isCaptain: false }
+                { name: "Abhi", team: "Team B", isBowler: true, isCaptain: false },
+                { name: "Thoths", team: "Team B", isBowler: true, isCaptain: false }
             ]
         };
 
@@ -337,11 +420,17 @@
             extras: 0,
             striker: { name: "Arun", runs: 0, balls: 0, fours: 0, sixes: 0 },
             nonStriker: { name: "Johnny", runs: 0, balls: 0, fours: 0, sixes: 0 },
-            bowler: { name: "Viswa", legalBallsBowled: 0, runsConceded: 0, wickets: 0 },
+            bowler: { name: "Thoths", legalBallsBowled: 0, runsConceded: 0, wickets: 0 },
             timeline: [],
             battersList: {},
             bowlersList: {}
         };
+
+        // Undo History Stack
+        let historyStack = [];
+
+        // Pending Action Object
+        let pendingAction = null;
 
         let isListening = false;
         let recognition = null;
@@ -362,6 +451,14 @@
             document.getElementById(`view-${tab}`).classList.remove('hidden');
             document.getElementById(`tab-${tab}`).className = "py-2.5 rounded-xl bg-emerald-600 text-white transition shadow";
             if (tab === 'analytics') updateCharts();
+        }
+
+        function toggleConfirmModeSetting(checked) {
+            matchSetup.confirmBeforeCommit = checked;
+            document.getElementById('confirm-badge').innerText = checked ? "Confirm: ON" : "Confirm: OFF";
+            document.getElementById('confirm-badge').className = checked ? 
+                "text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 px-2 py-0.5 rounded-full font-medium" : 
+                "text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-full font-medium";
         }
 
         function renderPlayerMappingRows() {
@@ -462,6 +559,7 @@
         function confirmAndStartMatch() {
             matchState.battersList = {};
             matchState.bowlersList = {};
+            historyStack = [];
 
             matchSetup.players.forEach(p => {
                 if (p.team === 'Team A') {
@@ -492,11 +590,31 @@
             `).join('');
         }
 
+        function saveSnapshot() {
+            historyStack.push(JSON.parse(JSON.stringify(matchState)));
+            updateUndoButtons();
+        }
+
+        function undoLastAction() {
+            if (historyStack.length === 0) return;
+            matchState = historyStack.pop();
+            updateUI();
+            updateUndoButtons();
+        }
+
+        function updateUndoButtons() {
+            const count = historyStack.length;
+            document.getElementById('undo-count-badge').innerText = count;
+            document.getElementById('btn-undo-header').disabled = count === 0;
+            document.getElementById('btn-undo-live').disabled = count === 0;
+        }
+
         function setStriker(name) {
             if (name === matchState.bowler.name) {
                 alert(`⚠️ Conflict Warning: "${name}" is currently set as Bowler!`);
                 return;
             }
+            saveSnapshot();
             matchState.striker.name = name;
             if (!matchState.battersList[name]) {
                 matchState.battersList[name] = { runs: 0, balls: 0, fours: 0, sixes: 0, out: false, team: matchSetup.teamA };
@@ -509,6 +627,7 @@
                 alert(`⚠️ Conflict Warning: "${name}" is currently set as Striker!`);
                 return;
             }
+            saveSnapshot();
             matchState.bowler.name = name;
             if (!matchState.bowlersList[name]) {
                 matchState.bowlersList[name] = { legalBalls: 0, runs: 0, wickets: 0, team: matchSetup.teamB };
@@ -527,7 +646,7 @@
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 document.getElementById('transcript-display').innerText = `"${transcript}"`;
-                processCommentary(transcript);
+                handleCommentaryInput(transcript);
             };
             recognition.onerror = function() { stopListening(); };
             recognition.onend = function() { stopListening(); };
@@ -555,15 +674,10 @@
             document.getElementById('mic-status').innerText = "Ready";
         }
 
-        function simulateCommentary(text) {
+        function handleCommentaryInput(text) {
             document.getElementById('transcript-display').innerText = `"${text}"`;
-            processCommentary(text);
-        }
-
-        function processCommentary(text) {
+            
             const lower = text.toLowerCase();
-            let parsed = { runs: 0, isLegal: true, isWicket: false };
-
             if (lower.includes('is batting') || lower.includes('on strike')) {
                 const match = text.match(/^([a-zA-Z\s]+)\s+(?:is batting|on strike)/i);
                 if (match && match[1]) { setStriker(match[1].trim()); return; }
@@ -573,48 +687,117 @@
                 if (match && match[1]) { setBowler(match[1].trim()); return; }
             }
 
+            const parsed = parseCommentaryText(text);
+
+            if (matchSetup.confirmBeforeCommit) {
+                pendingAction = { transcript: text, parsed: parsed };
+                showConfirmModal();
+            } else {
+                commitAction(parsed);
+            }
+        }
+
+        function parseCommentaryText(text) {
+            const lower = text.toLowerCase();
+            let parsed = { runs: 0, isLegal: true, isWicket: false, outcomeKey: "1" };
+
             if (lower.includes('six') || lower.includes('6 runs')) {
                 parsed.runs = 6;
-                matchState.striker.sixes++;
-                matchState.striker.runs += 6;
-                matchState.bowler.runsConceded += 6;
-                confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+                parsed.outcomeKey = "6";
             } else if (lower.includes('four') || lower.includes('4 runs')) {
                 parsed.runs = 4;
-                matchState.striker.fours++;
-                matchState.striker.runs += 4;
-                matchState.bowler.runsConceded += 4;
-                confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-            } else if (lower.includes('single') || lower.includes('one run')) {
-                parsed.runs = 1;
-                matchState.striker.runs += 1;
-                matchState.bowler.runsConceded += 1;
-            } else if (lower.includes('two') || lower.includes('2 runs')) {
-                parsed.runs = 2;
-                matchState.striker.runs += 2;
-                matchState.bowler.runsConceded += 2;
+                parsed.outcomeKey = "4";
             } else if (lower.includes('wide')) {
                 parsed.isLegal = false;
-                matchState.extras++;
-                matchState.runs++;
-                matchState.bowler.runsConceded++;
+                parsed.runs = 1;
+                parsed.outcomeKey = "wide";
             } else if (lower.includes('wicket') || lower.includes('bowled')) {
                 parsed.isWicket = true;
-                matchState.wickets++;
-                matchState.bowler.wickets++;
-                confetti({ particleCount: 100, spread: 100, origin: { y: 0.5 }, colors: ['#f43f5e', '#10b981'] });
+                parsed.outcomeKey = "wicket";
+            } else if (lower.includes('dot') || lower.includes('no run') || lower.includes('0 run')) {
+                parsed.runs = 0;
+                parsed.outcomeKey = "0";
+            } else if (lower.includes('two') || lower.includes('2 runs')) {
+                parsed.runs = 2;
+                parsed.outcomeKey = "2";
+            } else if (lower.includes('three') || lower.includes('3 runs')) {
+                parsed.runs = 3;
+                parsed.outcomeKey = "3";
             } else {
                 parsed.runs = 1;
-                matchState.striker.runs += 1;
-                matchState.bowler.runsConceded += 1;
+                parsed.outcomeKey = "1";
+            }
+            return parsed;
+        }
+
+        function showConfirmModal() {
+            if (!pendingAction) return;
+            document.getElementById('modal-transcript-text').innerText = `"${pendingAction.transcript}"`;
+            document.getElementById('modal-striker').innerText = matchState.striker.name;
+            document.getElementById('modal-bowler').innerText = matchState.bowler.name;
+            document.getElementById('modal-outcome-select').value = pendingAction.parsed.outcomeKey;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function cancelPendingAction() {
+            pendingAction = null;
+            document.getElementById('confirm-modal').classList.add('hidden');
+        }
+
+        function commitPendingAction() {
+            if (!pendingAction) return;
+            const selValue = document.getElementById('modal-outcome-select').value;
+            let finalParsed = { runs: 0, isLegal: true, isWicket: false };
+
+            if (selValue === "wide") {
+                finalParsed.isLegal = false;
+                finalParsed.runs = 1;
+            } else if (selValue === "wicket") {
+                finalParsed.isWicket = true;
+            } else {
+                finalParsed.runs = parseInt(selValue);
             }
 
-            matchState.runs += parsed.runs;
-            if (parsed.isLegal) {
+            cancelPendingAction();
+            commitAction(finalParsed);
+        }
+
+        function commitAction(parsed) {
+            saveSnapshot();
+
+            if (parsed.isWicket) {
+                matchState.wickets++;
+                matchState.bowler.wickets++;
                 matchState.balls++;
                 matchState.striker.balls++;
                 matchState.bowler.legalBallsBowled++;
+                matchState.timeline.unshift('W');
+                confetti({ particleCount: 100, spread: 100, origin: { y: 0.5 }, colors: ['#f43f5e', '#10b981'] });
+            } else if (!parsed.isLegal) { // Wide
+                matchState.extras++;
+                matchState.runs++;
+                matchState.bowler.runsConceded++;
+                matchState.timeline.unshift('Wd');
+            } else {
+                matchState.runs += parsed.runs;
+                matchState.balls++;
+                matchState.striker.balls++;
+                matchState.striker.runs += parsed.runs;
+                matchState.bowler.runsConceded += parsed.runs;
+                matchState.bowler.legalBallsBowled++;
+
+                if (parsed.runs === 4) {
+                    matchState.striker.fours++;
+                    confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+                } else if (parsed.runs === 6) {
+                    matchState.striker.sixes++;
+                    confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+                }
+
+                matchState.timeline.unshift(parsed.runs);
             }
+
+            if (matchState.timeline.length > 15) matchState.timeline.pop();
 
             matchState.battersList[matchState.striker.name] = matchState.striker;
             matchState.bowlersList[matchState.bowler.name] = {
@@ -623,9 +806,6 @@
                 wickets: matchState.bowler.wickets,
                 team: matchSetup.teamB
             };
-
-            matchState.timeline.unshift(parsed.isWicket ? 'W' : parsed.runs);
-            if (matchState.timeline.length > 15) matchState.timeline.pop();
 
             updateUI();
         }
@@ -652,7 +832,7 @@
             document.getElementById('bowler-runs-conceded').innerText = matchState.bowler.runsConceded;
             const bOvers = Math.floor(matchState.bowler.legalBallsBowled / 6) + '.' + (matchState.bowler.legalBallsBowled % 6);
             document.getElementById('bowler-overs').innerText = bOvers;
-            const bEcon = oversDecimal > 0 ? (matchState.bowler.runsConceded / (matchState.bowler.legalBallsBowled / 6)).toFixed(1) : '0.0';
+            const bEcon = (matchState.bowler.legalBallsBowled / 6) > 0 ? (matchState.bowler.runsConceded / (matchState.bowler.legalBallsBowled / 6)).toFixed(1) : '0.0';
             document.getElementById('bowler-econ').innerText = `Eco: ${bEcon}`;
 
             const feed = document.getElementById('ball-feed');
@@ -660,12 +840,13 @@
                 feed.innerHTML = `<span class="text-xs text-slate-500 italic py-2">No balls bowled yet. Start speaking!</span>`;
             } else {
                 feed.innerHTML = matchState.timeline.map(b => `
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${b === 'W' ? 'bg-rose-600 text-white' : b === 4 ? 'bg-emerald-600 text-white' : b === 6 ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-300'}">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${b === 'W' ? 'bg-rose-600 text-white' : b === 4 ? 'bg-emerald-600 text-white' : b === 6 ? 'bg-amber-600 text-white' : b === 'Wd' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-300'}">
                         ${b}
                     </div>
                 `).join('');
             }
 
+            updateUndoButtons();
             updateScorecardTables();
             updateCharts();
         }
@@ -687,7 +868,7 @@
             const bowlBody = document.getElementById('bowling-table-body');
             bowlBody.innerHTML = Object.entries(matchState.bowlersList).map(([name, data]) => {
                 const o = Math.floor(data.legalBalls / 6) + '.' + (data.legalBalls % 6);
-                const eco = data.legalBalls > 0 ? (data.runs / (data.legalBalls / 6)).toFixed(1) : '0.0';
+                const eco = (data.legalBalls / 6) > 0 ? (data.runs / (data.legalBalls / 6)).toFixed(1) : '0.0';
                 return `<tr class="border-b border-slate-900/50">
                     <td class="py-2 font-medium">${name}</td>
                     <td class="py-2 text-center text-slate-400">${matchSetup.teamB}</td>
