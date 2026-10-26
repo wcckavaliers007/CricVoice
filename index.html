@@ -55,8 +55,8 @@
         <!-- Navigation Tabs -->
         <div class="grid grid-cols-3 bg-slate-900 p-1 rounded-2xl border border-slate-800 text-xs font-semibold">
             <button onclick="switchTab('live')" id="tab-live" class="py-2.5 rounded-xl bg-emerald-600 text-white transition shadow">Live Action</button>
-            <button onclick="switchTab("scorecard")" id="tab-scorecard" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Scorecard</button>
-            <button onclick="switchTab("analytics")" id="tab-analytics" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Analytics</button>
+            <button onclick="switchTab('scorecard')" id="tab-scorecard" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Scorecard</button>
+            <button onclick="switchTab('analytics')" id="tab-analytics" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Analytics</button>
         </div>
 
         <!-- TAB 1: LIVE ACTION -->
@@ -374,7 +374,6 @@
             } else if (lower.includes('dot') || lower.includes('no run')) {
                 parsed.runs = 0;
             } else {
-                // Default fallback to 1 run if spoken
                 parsed.runs = 1;
                 matchState.striker.runs += 1;
                 matchState.bowler.runsConceded += 1;
@@ -387,7 +386,6 @@
                 matchState.bowler.legalBallsBowled++;
             }
 
-            // Sync with lists
             matchState.battersList[matchState.striker.name] = matchState.striker;
             matchState.bowlersList[matchState.bowler.name] = {
                 legalBalls: matchState.bowler.legalBallsBowled,
@@ -438,7 +436,6 @@
                 `).join('');
             }
 
-            // Tables
             updateScorecardTables();
         }
 
