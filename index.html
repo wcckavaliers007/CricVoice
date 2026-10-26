@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricVoice AI Scorecard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 500: '#10B981', 600: '#059669', 700: '#047857' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.8); }
+        }
+        .listening-active { animation: pulse-glow 2s infinite; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="bg-emerald-600 text-white p-2 rounded-xl shadow-md">
+                <i class="fa-solid fa-microphone-lines text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight">CricVoice AI</h1>
+                <p class="text-xs text-emerald-400 font-medium flex items-center gap-1">
+                    <span id="ai-status-dot" class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
+                    <span id="ai-status-text">Offline Regex & Name Matcher</span>
+                </p>
+            </div>
+        </div>
+        <button onclick="openSettings()" class="bg-slate-800 hover:bg-slate-700 p-2.5 rounded-xl text-slate-300 transition">
+            <i class="fa-solid fa-gear"></i>
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-md w-full mx-auto p-4 pb-24 flex flex-col gap-4">
+
+        <!-- Navigation Tabs -->
+        <div class="grid grid-cols-3 bg-slate-900 p-1 rounded-2xl border border-slate-800 text-xs font-semibold">
+            <button onclick="switchTab('live')" id="tab-live" class="py-2.5 rounded-xl bg-emerald-600 text-white transition shadow">Live Action</button>
+            <button onclick="switchTab("scorecard")" id="tab-scorecard" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Scorecard</button>
+            <button onclick="switchTab("analytics")" id="tab-analytics" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Analytics</button>
+        </div>
+
+        <!-- TAB 1: LIVE ACTION -->
+        <div id="view-live" class="flex flex-col gap-4">
+            
+            <!-- Score Banner -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 transform translate-x-4 -translate-y-4 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+                
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold px-2.5 py-1 bg-emerald-950/60 rounded-full border border-emerald-800/40">LIVE MATCH</span>
+                    <span id="match-run-rate" class="text-xs text-slate-400 font-medium">RR: 0.00</span>
+                </div>
+
+                <div class="flex items-baseline gap-3 mb-4">
+                    <h2 id="total-score" class="text-4xl font-black tracking-tight text-white">0/0</h2>
+                    <span class="text-lg text-slate-400 font-semibold">(<span id="total-overs">0.0</span> Ov)</span>
+                </div>
+
+                <!-- Batters & Bowler Quick Box -->
+                <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-800/80 text-xs">
+                    <div class="bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/50">
+                        <div class="text-slate-400 font-medium mb-0.5 flex justify-between">
+                            <span>STRIKER</span>
+                            <span id="striker-sr" class="text-emerald-400">SR: 0.0</span>
+                        </div>
+                        <div id="striker-name" class="font-bold text-sm truncate text-white">Batter 1*</div>
+                        <div class="text-slate-300 mt-0.5"><span id="striker-runs">0</span> (<span id="striker-balls">0</span>b)</div>
+                    </div>
+                    <div class="bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/50">
+                        <div class="text-slate-400 font-medium mb-0.5 flex justify-between">
+                            <span>BOWLER</span>
+                            <span id="bowler-econ" class="text-emerald-400">Eco: 0.0</span>
+                        </div>
+                        <div id="bowler-name" class="font-bold text-sm truncate text-white">Bowler 1</div>
+                        <div class="text-slate-300 mt-0.5"><span id="bowler-wickets">0</span>-<span id="bowler-runs-conceded">0</span> (<span id="bowler-overs">0.0</span>)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voice Controls & Waveform -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col items-center gap-4">
+                <div class="w-full flex justify-between items-center">
+                    <span class="text-xs font-semibold text-slate-400 uppercase">Microphone Voice Engine</span>
+                    <span id="mic-status" class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full">Ready</span>
+                </div>
+
+                <!-- Mic Button -->
+                <button id="mic-btn" onclick="toggleListening()" class="w-20 h-20 rounded-full bg-emerald-600 hover:bg-emerald-500 flex items-center justify-center text-white text-3xl shadow-lg shadow-emerald-900/50 transition transform active:scale-95">
+                    <i id="mic-icon" class="fa-solid fa-microphone"></i>
+                </button>
+
+                <p id="transcript-display" class="text-sm text-center text-slate-300 italic min-h-[2.5rem] flex items-center justify-center px-4">
+                    Tap the microphone and say e.g., "Arun is batting", "Cover drive for 4", or "Arun bowling"
+                </p>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase mb-3">Quick Touch Presets</h3>
+                <div class="grid grid-cols-4 gap-2 text-xs">
+                    <button onclick="simulateCommentary('Arun is batting')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition text-emerald-400">Arun Bat</button>
+                    <button onclick="simulateCommentary('Arun is bowling')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition text-amber-400">Arun Bowl</button>
+                    <button onclick="simulateCommentary('four runs')" class="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/40 py-2 rounded-xl font-semibold text-emerald-300 transition">Four 🏏</button>
+                    <button onclick="simulateCommentary('six runs')" class="bg-emerald-900/80 hover:bg-emerald-700 py-2 rounded-xl font-bold text-white transition shadow">Six 🚀</button>
+                    <button onclick="simulateCommentary('single taken')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">1 Run</button>
+                    <button onclick="simulateCommentary('dot ball')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">Dot</button>
+                    <button onclick="simulateCommentary('wide ball')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">Wide</button>
+                    <button onclick="simulateCommentary('wicket fall')" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800/40 py-2 rounded-xl font-semibold text-rose-300 transition">Wicket ☝️</button>
+                </div>
+            </div>
+
+            <!-- Ball Timeline Feed -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex flex-col gap-3">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase">Recent Ball-by-Ball Timeline</h3>
+                <div id="ball-feed" class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                    <span class="text-xs text-slate-500 italic py-2">No balls bowled yet. Start speaking!</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB 2: SCORECARD -->
+        <div id="view-scorecard" class="hidden flex flex-col gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl">
+                <h3 class="text-sm font-bold mb-3 text-emerald-400"><i class="fa-solid fa-clipboard-user mr-2"></i>Batting Scorecard</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="pb-2">Batter</th>
+                                <th class="pb-2 text-center">R</th>
+                                <th class="pb-2 text-center">B</th>
+                                <th class="pb-2 text-center">4s</th>
+                                <th class="pb-2 text-center">6s</th>
+                                <th class="pb-2 text-right">SR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="batting-table-body">
+                            <tr><td colspan="6" class="text-center text-slate-500 py-4">No data yet</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl">
+                <h3 class="text-sm font-bold mb-3 text-emerald-400"><i class="fa-solid fa-bowling-ball mr-2"></i>Bowling Figures</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="pb-2">Bowler</th>
+                                <th class="pb-2 text-center">O</th>
+                                <th class="pb-2 text-center">M</th>
+                                <th class="pb-2 text-center">R</th>
+                                <th class="pb-2 text-center">W</th>
+                                <th class="pb-2 text-right">Econ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bowling-table-body">
+                            <tr><td colspan="6" class="text-center text-slate-500 py-4">No data yet</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: ANALYTICS -->
+        <div id="view-analytics" class="hidden flex flex-col gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl">
+                <h3 class="text-sm font-bold mb-3 text-emerald-400"><i class="fa-solid fa-chart-line mr-2"></i>Run Rate Progression</h3>
+                <div class="h-48 relative">
+                    <canvas id="runRateChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-sm shadow-2xl flex flex-col gap-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">App Settings</h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Gemini API Key (Optional for Cloud AI)</label>
+                <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+            </div>
+            <button onclick="saveSettings()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl font-bold text-xs text-white transition">Save Settings</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let matchState = {
+            runs: 0,
+            wickets: 0,
+            balls: 0,
+            extras: 0,
+            striker: { name: "Batter 1", runs: 0, balls: 0, fours: 0, sixes: 0 },
+            nonStriker: { name: "Batter 2", runs: 0, balls: 0, fours: 0, sixes: 0 },
+            bowler: { name: "Bowler 1", legalBallsBowled: 0, runsConceded: 0, wickets: 0, maidens: 0 },
+            timeline: [],
+            battersList: { "Batter 1": { runs: 0, balls: 0, fours: 0, sixes: 0, out: false }, "Batter 2": { runs: 0, balls: 0, fours: 0, sixes: 0, out: false } },
+            bowlersList: { "Bowler 1": { legalBalls: 0, runs: 0, wickets: 0 } }
+        };
+
+        let isListening = false;
+        let recognition = null;
+        let chartInstance = null;
+
+        window.onload = function() {
+            initSpeechRecognition();
+            initChart();
+            updateUI();
+        };
+
+        function switchTab(tab) {
+            ['live', 'scorecard', 'analytics'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).className = "py-2.5 rounded-xl text-slate-400 hover:text-white transition";
+            });
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).className = "py-2.5 rounded-xl bg-emerald-600 text-white transition shadow";
+            if (tab === 'analytics') updateChart();
+        }
+
+        function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
+        function saveSettings() {
+            localStorage.setItem('gemini_api_key', document.getElementById('api-key-input').value);
+            closeSettings();
+            alert('Settings saved successfully!');
+        }
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                document.getElementById('mic-status').innerText = "Not Supported";
+                return;
+            }
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('transcript-display').innerText = `"${transcript}"`;
+                processCommentary(transcript);
+            };
+
+            recognition.onerror = function() { stopListening(); };
+            recognition.onend = function() { stopListening(); };
+        }
+
+        function toggleListening() {
+            if (!recognition) {
+                alert('Speech recognition not supported in this browser. Use Chrome or Safari.');
+                return;
+            }
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+                isListening = true;
+                document.getElementById('mic-btn').classList.add('listening-active', 'bg-rose-600');
+                document.getElementById('mic-btn').classList.remove('bg-emerald-600');
+                document.getElementById('mic-icon').className = "fa-solid fa-stop";
+                document.getElementById('mic-status').innerText = "Listening...";
+            }
+        }
+
+        function stopListening() {
+            isListening = false;
+            document.getElementById('mic-btn').classList.remove('listening-active', 'bg-rose-600');
+            document.getElementById('mic-btn').classList.add('bg-emerald-600');
+            document.getElementById('mic-icon').className = "fa-solid fa-microphone";
+            document.getElementById('mic-status').innerText = "Ready";
+        }
+
+        function simulateCommentary(text) {
+            document.getElementById('transcript-display').innerText = `"${text}"`;
+            processCommentary(text);
+        }
+
+        function processCommentary(text) {
+            const lower = text.toLowerCase();
+            let parsed = { runs: 0, isLegal: true, isWicket: false, extraType: null };
+
+            // 1. Check for Name Updates (e.g. "Arun is batting" or "Arun bowling")
+            if (lower.includes('is batting') || lower.includes('comes to bat') || lower.includes('on strike')) {
+                const nameMatch = text.match(/^([a-zA-Z\s]+)\s+(?:is batting|comes to bat|on strike)/i);
+                if (nameMatch && nameMatch[1]) {
+                    const newName = nameMatch[1].trim();
+                    matchState.striker.name = newName;
+                    if (!matchState.battersList[newName]) {
+                        matchState.battersList[newName] = { runs: 0, balls: 0, fours: 0, sixes: 0, out: false };
+                    }
+                    updateUI();
+                    return;
+                }
+            }
+            if (lower.includes('is bowling') || lower.includes('bowling') || lower.includes('into the attack')) {
+                const bowlMatch = text.match(/^([a-zA-Z\s]+)\s+(?:is bowling|bowling|into the attack)/i);
+                if (bowlMatch && bowlMatch[1]) {
+                    const newBowler = bowlMatch[1].trim();
+                    matchState.bowler.name = newBowler;
+                    if (!matchState.bowlersList[newBowler]) {
+                        matchState.bowlersList[newBowler] = { legalBalls: 0, runs: 0, wickets: 0 };
+                    }
+                    updateUI();
+                    return;
+                }
+            }
+
+            // 2. Check Scoring / Wicket Patterns
+            if (lower.includes('six') || lower.includes('6 runs')) {
+                parsed.runs = 6;
+                matchState.striker.sixes++;
+                matchState.striker.runs += 6;
+                matchState.bowler.runsConceded += 6;
+                confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+            } else if (lower.includes('four') || lower.includes('4 runs')) {
+                parsed.runs = 4;
+                matchState.striker.fours++;
+                matchState.striker.runs += 4;
+                matchState.bowler.runsConceded += 4;
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+            } else if (lower.includes('single') || lower.includes('one run')) {
+                parsed.runs = 1;
+                matchState.striker.runs += 1;
+                matchState.bowler.runsConceded += 1;
+            } else if (lower.includes('two') || lower.includes('2 runs')) {
+                parsed.runs = 2;
+                matchState.striker.runs += 2;
+                matchState.bowler.runsConceded += 2;
+            } else if (lower.includes('three') || lower.includes('3 runs')) {
+                parsed.runs = 3;
+                matchState.striker.runs += 3;
+                matchState.bowler.runsConceded += 3;
+            } else if (lower.includes('wide')) {
+                parsed.extraType = 'wide';
+                parsed.isLegal = false;
+                matchState.extras++;
+                matchState.runs++;
+                matchState.bowler.runsConceded++;
+            } else if (lower.includes('wicket') || lower.includes('bowled') || lower.includes('caught') || lower.includes('run out')) {
+                parsed.isWicket = true;
+                matchState.wickets++;
+                matchState.bowler.wickets++;
+                confetti({ particleCount: 100, spread: 100, origin: { y: 0.5 }, colors: ['#f43f5e', '#10b981'] });
+            } else if (lower.includes('dot') || lower.includes('no run')) {
+                parsed.runs = 0;
+            } else {
+                // Default fallback to 1 run if spoken
+                parsed.runs = 1;
+                matchState.striker.runs += 1;
+                matchState.bowler.runsConceded += 1;
+            }
+
+            matchState.runs += parsed.runs;
+            if (parsed.isLegal) {
+                matchState.balls++;
+                matchState.striker.balls++;
+                matchState.bowler.legalBallsBowled++;
+            }
+
+            // Sync with lists
+            matchState.battersList[matchState.striker.name] = matchState.striker;
+            matchState.bowlersList[matchState.bowler.name] = {
+                legalBalls: matchState.bowler.legalBallsBowled,
+                runs: matchState.bowler.runsConceded,
+                wickets: matchState.bowler.wickets
+            };
+
+            matchState.timeline.unshift(parsed.isWicket ? 'W' : (parsed.extraType ? 'Wd' : parsed.runs));
+            if (matchState.timeline.length > 15) matchState.timeline.pop();
+
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('total-score').innerText = `${matchState.runs}/${matchState.wickets}`;
+            const overs = Math.floor(matchState.balls / 6) + '.' + (matchState.balls % 6);
+            document.getElementById('total-overs').innerText = overs;
+
+            const oversDecimal = matchState.balls / 6;
+            const rr = oversDecimal > 0 ? (matchState.runs / oversDecimal).toFixed(2) : '0.00';
+            document.getElementById('match-run-rate').innerText = `RR: ${rr}`;
+
+            // Striker
+            document.getElementById('striker-name').innerText = matchState.striker.name + '*';
+            document.getElementById('striker-runs').innerText = matchState.striker.runs;
+            document.getElementById('striker-balls').innerText = matchState.striker.balls;
+            const sr = matchState.striker.balls > 0 ? ((matchState.striker.runs / matchState.striker.balls) * 100).toFixed(1) : '0.0';
+            document.getElementById('striker-sr').innerText = `SR: ${sr}`;
+
+            // Bowler
+            document.getElementById('bowler-name').innerText = matchState.bowler.name;
+            document.getElementById('bowler-wickets').innerText = matchState.bowler.wickets;
+            document.getElementById('bowler-runs-conceded').innerText = matchState.bowler.runsConceded;
+            const bOvers = Math.floor(matchState.bowler.legalBallsBowled / 6) + '.' + (matchState.bowler.legalBallsBowled % 6);
+            document.getElementById('bowler-overs').innerText = bOvers;
+            const bEcon = oversDecimal > 0 ? (matchState.bowler.runsConceded / (matchState.bowler.legalBallsBowled / 6)).toFixed(1) : '0.0';
+            document.getElementById('bowler-econ').innerText = `Eco: ${bEcon}`;
+
+            // Timeline
+            const feed = document.getElementById('ball-feed');
+            if (matchState.timeline.length === 0) {
+                feed.innerHTML = `<span class="text-xs text-slate-500 italic py-2">No balls bowled yet. Start speaking!</span>`;
+            } else {
+                feed.innerHTML = matchState.timeline.map(b => `
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${b === 'W' ? 'bg-rose-600 text-white' : b === 4 ? 'bg-emerald-600 text-white' : b === 6 ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-300'}">
+                        ${b}
+                    </div>
+                `).join('');
+            }
+
+            // Tables
+            updateScorecardTables();
+        }
+
+        function updateScorecardTables() {
+            const batBody = document.getElementById('batting-table-body');
+            batBody.innerHTML = Object.entries(matchState.battersList).map(([name, data]) => {
+                const sr = data.balls > 0 ? ((data.runs / data.balls) * 100).toFixed(1) : '0.0';
+                return `<tr class="border-b border-slate-900/50">
+                    <td class="py-2 font-medium">${name}</td>
+                    <td class="py-2 text-center font-bold">${data.runs}</td>
+                    <td class="py-2 text-center">${data.balls}</td>
+                    <td class="py-2 text-center">${data.fours}</td>
+                    <td class="py-2 text-center">${data.sixes}</td>
+                    <td class="py-2 text-right">${sr}</td>
+                </tr>`;
+            }).join('');
+
+            const bowlBody = document.getElementById('bowling-table-body');
+            bowlBody.innerHTML = Object.entries(matchState.bowlersList).map(([name, data]) => {
+                const o = Math.floor(data.legalBalls / 6) + '.' + (data.legalBalls % 6);
+                const eco = data.legalBalls > 0 ? (data.runs / (data.legalBalls / 6)).toFixed(1) : '0.0';
+                return `<tr class="border-b border-slate-900/50">
+                    <td class="py-2 font-medium">${name}</td>
+                    <td class="py-2 text-center">${o}</td>
+                    <td class="py-2 text-center">0</td>
+                    <td class="py-2 text-center font-bold">${data.runs}</td>
+                    <td class="py-2 text-center text-emerald-400 font-bold">${data.wickets}</td>
+                    <td class="py-2 text-right">${eco}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('runRateChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Start', 'Over 1', 'Over 2', 'Over 3'],
+                    datasets: [{
+                        label: 'Runs',
+                        data: [0, matchState.runs],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            if (chartInstance) {
+                chartInstance.data.datasets[0].data = [0, matchState.runs];
+                chartInstance.update();
+            }
+        }
+    </script>
+</body>
+</html>
