@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CricVoice AI - Team & Player Mapping</title>
+    <title>CricVoice AI - Team & Role Mapping</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -67,10 +67,12 @@
 
         <!-- TAB 0: TEAM & PLAYER MAPPING SETUP -->
         <div id="view-setup" class="flex flex-col gap-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col gap-4">
+            
+            <!-- Step 1: Input Roster -->
+            <div id="setup-step-1" class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col gap-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h2 class="text-sm font-bold text-emerald-400 uppercase tracking-wider"><i class="fa-solid fa-people-group mr-2"></i>Team & Player Mapping</h2>
-                    <span class="text-xs text-slate-400">Squad Config</span>
+                    <h2 class="text-sm font-bold text-emerald-400 uppercase tracking-wider"><i class="fa-solid fa-people-group mr-2"></i>Roster & Roles Input</h2>
+                    <span class="text-xs text-slate-400">Step 1 of 2</span>
                 </div>
 
                 <!-- Match Details -->
@@ -97,24 +99,59 @@
                     </div>
                 </div>
 
-                <!-- Interactive Player Mapping List -->
+                <!-- Player Mapping List with Bowler & Captain check -->
                 <div class="flex flex-col gap-2">
                     <div class="flex justify-between items-center">
-                        <label class="text-xs font-medium text-slate-400 uppercase">Master Roster & Team Mappings</label>
+                        <label class="text-xs font-medium text-slate-400 uppercase">Player Master Roster</label>
                         <button onclick="addPlayerRow()" class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-900 px-2.5 py-1 rounded-lg transition">
                             <i class="fa-solid fa-plus mr-1"></i> Add Player
                         </button>
                     </div>
 
-                    <div id="player-mapping-container" class="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
-                        <!-- Dynamically populated rows -->
+                    <div id="player-mapping-container" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+                        <!-- Populated dynamically -->
                     </div>
                 </div>
 
-                <button onclick="applyPlayerMapping()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-2xl font-bold text-xs text-white transition shadow-lg shadow-emerald-900/40 mt-2">
-                    Save Roster & Start Match <i class="fa-solid fa-arrow-right ml-1"></i>
+                <button onclick="showTeamPreview()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-2xl font-bold text-xs text-white transition shadow-lg shadow-emerald-900/40 mt-2">
+                    Review Teams & Roles <i class="fa-solid fa-arrow-right ml-1"></i>
                 </button>
             </div>
+
+            <!-- Step 2: Team Preview & Role Highlights -->
+            <div id="setup-step-2" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider"><i class="fa-solid fa-shield-halved mr-2"></i>Match Preview & Squad Highlights</h2>
+                    <button onclick="backToRosterInput()" class="text-xs text-slate-400 hover:text-white"><i class="fa-solid fa-pen mr-1"></i> Edit</button>
+                </div>
+
+                <!-- Team A Preview Card -->
+                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center mb-2 pb-1 border-b border-slate-800">
+                        <span id="preview-team-a-title" class="font-bold text-xs text-emerald-400">Team A</span>
+                        <span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800/50 px-2 py-0.5 rounded-full">Batting Squad</span>
+                    </div>
+                    <div id="preview-team-a-players" class="flex flex-col gap-1.5 text-xs">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Team B Preview Card -->
+                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center mb-2 pb-1 border-b border-slate-800">
+                        <span id="preview-team-b-title" class="font-bold text-xs text-amber-400">Team B</span>
+                        <span class="text-[10px] bg-amber-950 text-amber-300 border border-amber-800/50 px-2 py-0.5 rounded-full">Bowling Squad</span>
+                    </div>
+                    <div id="preview-team-b-players" class="flex flex-col gap-1.5 text-xs">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <button onclick="confirmAndStartMatch()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-2xl font-bold text-xs text-white transition shadow-lg shadow-emerald-900/40">
+                    Start Match Action <i class="fa-solid fa-play ml-1"></i>
+                </button>
+            </div>
+
         </div>
 
         <!-- TAB 1: LIVE ACTION -->
@@ -270,12 +307,12 @@
             teamA: "WCC Cavaliers",
             teamB: "Royal Strikers",
             players: [
-                { name: "Arun", team: "Team A" },
-                { name: "Vijay", team: "Team A" },
-                { name: "Rohit", team: "Team A" },
-                { name: "Bumrah", team: "Team B" },
-                { name: "Jadeja", team: "Team B" },
-                { name: "Shami", team: "Team B" }
+                { name: "Arun", team: "Team A", isBowler: false, isCaptain: true },
+                { name: "Vijay", team: "Team A", isBowler: true, isCaptain: false },
+                { name: "Rohit", team: "Team A", isBowler: false, isCaptain: false },
+                { name: "Bumrah", team: "Team B", isBowler: true, isCaptain: true },
+                { name: "Jadeja", team: "Team B", isBowler: true, isCaptain: false },
+                { name: "Shami", team: "Team B", isBowler: true, isCaptain: false }
             ]
         };
 
@@ -301,7 +338,6 @@
             renderPlayerMappingRows();
             initSpeechRecognition();
             initCharts();
-            applyPlayerMapping();
         };
 
         function switchTab(tab) {
@@ -317,19 +353,31 @@
         function renderPlayerMappingRows() {
             const container = document.getElementById('player-mapping-container');
             container.innerHTML = matchSetup.players.map((p, index) => `
-                <div class="flex gap-2 items-center bg-slate-950 p-2 rounded-xl border border-slate-800">
-                    <input type="text" value="${p.name}" placeholder="Player Name" onchange="updatePlayerName(${index}, this.value)" class="flex-1 bg-transparent border-none text-xs text-white focus:outline-none px-1">
-                    <select onchange="updatePlayerTeam(${index}, this.value)" class="bg-slate-900 text-emerald-400 border border-slate-800 rounded-lg px-2 py-1 text-xs focus:outline-none">
-                        <option value="Team A" ${p.team === 'Team A' ? 'selected' : ''}>Team A</option>
-                        <option value="Team B" ${p.team === 'Team B' ? 'selected' : ''}>Team B</option>
-                    </select>
-                    <button onclick="removePlayerRow(${index})" class="text-rose-400 hover:text-rose-300 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+                <div class="flex flex-col gap-1 bg-slate-950 p-2 rounded-xl border border-slate-800">
+                    <div class="flex gap-2 items-center">
+                        <input type="text" value="${p.name}" placeholder="Player Name" onchange="updatePlayerName(${index}, this.value)" class="flex-1 bg-transparent border-none text-xs text-white focus:outline-none px-1 font-medium">
+                        <select onchange="updatePlayerTeam(${index}, this.value)" class="bg-slate-900 text-emerald-400 border border-slate-800 rounded-lg px-2 py-1 text-xs focus:outline-none">
+                            <option value="Team A" ${p.team === 'Team A' ? 'selected' : ''}>Team A</option>
+                            <option value="Team B" ${p.team === 'Team B' ? 'selected' : ''}>Team B</option>
+                        </select>
+                        <button onclick="removePlayerRow(${index})" class="text-rose-400 hover:text-rose-300 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <div class="flex items-center gap-4 text-[11px] text-slate-400 pt-1 px-1 border-t border-slate-900">
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" ${p.isBowler ? 'checked' : ''} onchange="togglePlayerBowler(${index}, this.checked)" class="rounded bg-slate-900 border-slate-800 text-emerald-500 focus:ring-0">
+                            <span>Bowler?</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" ${p.isCaptain ? 'checked' : ''} onchange="togglePlayerCaptain(${index}, this.checked)" class="rounded bg-slate-900 border-slate-800 text-amber-500 focus:ring-0">
+                            <span>Captain (C)</span>
+                        </label>
+                    </div>
                 </div>
             `).join('');
         }
 
         function addPlayerRow() {
-            matchSetup.players.push({ name: "New Player", team: "Team A" });
+            matchSetup.players.push({ name: "New Player", team: "Team A", isBowler: false, isCaptain: false });
             renderPlayerMappingRows();
         }
 
@@ -338,21 +386,54 @@
             renderPlayerMappingRows();
         }
 
-        function updatePlayerName(index, val) {
-            matchSetup.players[index].name = val.trim();
+        function updatePlayerName(index, val) { matchSetup.players[index].name = val.trim(); }
+        function updatePlayerTeam(index, val) { matchSetup.players[index].team = val; }
+        function togglePlayerBowler(index, val) { matchSetup.players[index].isBowler = val; }
+        function togglePlayerCaptain(index, val) {
+            if (val) {
+                // Ensure only one captain per team
+                const team = matchSetup.players[index].team;
+                matchSetup.players.forEach(p => { if (p.team === team) p.isCaptain = false; });
+            }
+            matchSetup.players[index].isCaptain = val;
+            renderPlayerMappingRows();
         }
 
-        function updatePlayerTeam(index, val) {
-            matchSetup.players[index].team = val;
-        }
-
-        function applyPlayerMapping() {
+        function showTeamPreview() {
             matchSetup.date = document.getElementById('setup-date').value;
             matchSetup.matchNum = document.getElementById('setup-match-num').value || "Match 1";
             matchSetup.teamA = document.getElementById('setup-team-a').value || "Team A";
             matchSetup.teamB = document.getElementById('setup-team-b').value || "Team B";
 
-            // Initialize rosters based on mapping
+            document.getElementById('preview-team-a-title').innerText = matchSetup.teamA;
+            document.getElementById('preview-team-b-title').innerText = matchSetup.teamB;
+
+            const renderTeamPreviewList = (teamKey) => {
+                const players = matchSetup.players.filter(p => p.team === teamKey);
+                if (players.length === 0) return `<span class="text-slate-500 italic">No players added</span>`;
+                return players.map(p => `
+                    <div class="flex items-center justify-between bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-800/50">
+                        <span class="font-medium text-slate-200">${p.name} ${p.isCaptain ? '<span class="text-amber-400 font-bold ml-1">👑 (C)</span>' : ''}</span>
+                        <div class="flex gap-1">
+                            ${p.isBowler ? '<span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-800/40 px-1.5 py-0.5 rounded">⚡ Bowler</span>' : '<span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800/40 px-1.5 py-0.5 rounded">Batter</span>'}
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            document.getElementById('preview-team-a-players').innerHTML = renderTeamPreviewList('Team A');
+            document.getElementById('preview-team-b-players').innerHTML = renderTeamPreviewList('Team B');
+
+            document.getElementById('setup-step-1').classList.add('hidden');
+            document.getElementById('setup-step-2').classList.remove('hidden');
+        }
+
+        function backToRosterInput() {
+            document.getElementById('setup-step-2').classList.add('hidden');
+            document.getElementById('setup-step-1').classList.remove('hidden');
+        }
+
+        function confirmAndStartMatch() {
             matchState.battersList = {};
             matchState.bowlersList = {};
 
@@ -364,9 +445,8 @@
                 }
             });
 
-            // Set default striker/bowler if available
             const teamABatters = matchSetup.players.filter(p => p.team === 'Team A');
-            const teamBBowlers = matchSetup.players.filter(p => p.team === 'Team B');
+            const teamBBowlers = matchSetup.players.filter(p => p.team === 'Team B' && p.isBowler);
 
             if (teamABatters.length > 0) matchState.striker.name = teamABatters[0].name;
             if (teamBBowlers.length > 0) matchState.bowler.name = teamBBowlers[0].name;
@@ -380,14 +460,14 @@
             const container = document.getElementById('squad-quick-chips');
             container.innerHTML = matchSetup.players.map(p => `
                 <button onclick="${p.team === 'Team A' ? `setStriker('${p.name}')` : `setBowler('${p.name}')`}" class="bg-slate-800 hover:bg-slate-700 ${p.team === 'Team A' ? 'text-emerald-300 border-emerald-900/50' : 'text-amber-300 border-amber-900/50'} border px-3 py-1 rounded-full text-xs shrink-0">
-                    ${p.name} (${p.team === 'Team A' ? 'Bat' : 'Bowl'})
+                    ${p.name} ${p.isCaptain ? '(C)' : ''} ${p.isBowler ? '⚡' : ''}
                 </button>
             `).join('');
         }
 
         function setStriker(name) {
             if (name === matchState.bowler.name) {
-                alert(`⚠️ Conflict: "${name}" is currently set as Bowler!`);
+                alert(`⚠️ Conflict Warning: "${name}" is currently set as Bowler!`);
                 return;
             }
             matchState.striker.name = name;
@@ -399,7 +479,7 @@
 
         function setBowler(name) {
             if (name === matchState.striker.name) {
-                alert(`⚠️ Conflict: "${name}" is currently set as Striker!`);
+                alert(`⚠️ Conflict Warning: "${name}" is currently set as Striker!`);
                 return;
             }
             matchState.bowler.name = name;
@@ -427,7 +507,7 @@
         }
 
         function toggleListening() {
-            if (!recognition) return alert('Speech recognition not supported in this browser.');
+            if (!recognition) return alert('Speech recognition not supported in browser.');
             if (isListening) {
                 recognition.stop();
             } else {
