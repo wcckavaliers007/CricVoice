@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CricVoice AI - Match Setup & Scorecard</title>
+    <title>CricVoice AI - Team & Player Mapping</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -49,7 +49,7 @@
                 <i class="fa-solid fa-download"></i> CSV
             </button>
             <button onclick="switchTab('setup')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-xl text-slate-300 transition">
-                <i class="fa-solid fa-sliders"></i>
+                <i class="fa-solid fa-users-gear"></i>
             </button>
         </div>
     </header>
@@ -59,18 +59,18 @@
 
         <!-- Navigation Tabs -->
         <div class="grid grid-cols-4 bg-slate-900 p-1 rounded-2xl border border-slate-800 text-xs font-semibold">
-            <button onclick="switchTab('setup')" id="tab-setup" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Setup</button>
+            <button onclick="switchTab('setup')" id="tab-setup" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Rosters</button>
             <button onclick="switchTab('live')" id="tab-live" class="py-2.5 rounded-xl bg-emerald-600 text-white transition shadow">Live</button>
             <button onclick="switchTab('scorecard')" id="tab-scorecard" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Scorecard</button>
             <button onclick="switchTab('analytics')" id="tab-analytics" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">Analytics</button>
         </div>
 
-        <!-- TAB 0: MATCH SETUP & SQUAD ENTRY -->
-        <div id="view-setup" class="hidden flex flex-col gap-4">
+        <!-- TAB 0: TEAM & PLAYER MAPPING SETUP -->
+        <div id="view-setup" class="flex flex-col gap-4">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col gap-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h2 class="text-sm font-bold text-emerald-400 uppercase tracking-wider"><i class="fa-solid fa-trophy mr-2"></i>Match Info & Squads</h2>
-                    <span class="text-xs text-slate-400">Step 1 of 2</span>
+                    <h2 class="text-sm font-bold text-emerald-400 uppercase tracking-wider"><i class="fa-solid fa-people-group mr-2"></i>Team & Player Mapping</h2>
+                    <span class="text-xs text-slate-400">Squad Config</span>
                 </div>
 
                 <!-- Match Details -->
@@ -80,43 +80,45 @@
                         <input type="date" id="setup-date" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Match # / Description</label>
-                        <input type="text" id="setup-match-num" placeholder="e.g. Match 1, Final" value="Match 1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Match # / Title</label>
+                        <input type="text" id="setup-match-num" value="Match 1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
                     </div>
                 </div>
 
                 <!-- Team Names -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Team A Name (Batting)</label>
-                        <input type="text" id="setup-team-a" placeholder="Team A" value="Team A" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Team A Name</label>
+                        <input type="text" id="setup-team-a" value="WCC Cavaliers" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Team B Name (Bowling)</label>
-                        <input type="text" id="setup-team-b" placeholder="Team B" value="Team B" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Team B Name</label>
+                        <input type="text" id="setup-team-b" value="Royal Strikers" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
                     </div>
                 </div>
 
-                <!-- Team A Squad -->
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Team A Players (Comma separated)</label>
-                    <textarea id="setup-squad-a" rows="2" placeholder="Arun, Vijay, Rohit, Rahul, Hardik..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500">Arun, Vijay, Rohit, Rahul, Hardik</textarea>
+                <!-- Interactive Player Mapping List -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-medium text-slate-400 uppercase">Master Roster & Team Mappings</label>
+                        <button onclick="addPlayerRow()" class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-900 px-2.5 py-1 rounded-lg transition">
+                            <i class="fa-solid fa-plus mr-1"></i> Add Player
+                        </button>
+                    </div>
+
+                    <div id="player-mapping-container" class="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
+                        <!-- Dynamically populated rows -->
+                    </div>
                 </div>
 
-                <!-- Team B Squad -->
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Team B Players (Comma separated)</label>
-                    <textarea id="setup-squad-b" rows="2" placeholder="Bumrah, Shami, Jadeja, Kuldeep, Siraj..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500">Bumrah, Shami, Jadeja, Kuldeep, Siraj</textarea>
-                </div>
-
-                <button onclick="applyMatchSetup()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-2xl font-bold text-xs text-white transition shadow-lg shadow-emerald-900/40">
-                    Save Match Setup & Start Match <i class="fa-solid fa-arrow-right ml-1"></i>
+                <button onclick="applyPlayerMapping()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-2xl font-bold text-xs text-white transition shadow-lg shadow-emerald-900/40 mt-2">
+                    Save Roster & Start Match <i class="fa-solid fa-arrow-right ml-1"></i>
                 </button>
             </div>
         </div>
 
         <!-- TAB 1: LIVE ACTION -->
-        <div id="view-live" class="flex flex-col gap-4">
+        <div id="view-live" class="hidden flex flex-col gap-4">
             
             <!-- Score Banner -->
             <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl relative overflow-hidden">
@@ -157,7 +159,7 @@
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex flex-col gap-2">
                 <h3 class="text-xs font-semibold text-slate-400 uppercase">Quick Select Active Players</h3>
                 <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none" id="squad-quick-chips">
-                    <!-- Squad chips auto-populated dynamically -->
+                    <!-- Populated dynamically -->
                 </div>
             </div>
 
@@ -174,7 +176,7 @@
                 </button>
 
                 <p id="transcript-display" class="text-sm text-center text-slate-300 italic min-h-[2.5rem] flex items-center justify-center px-4">
-                    Tap the mic and say "Arun is batting", "Four runs", or "Caught by Jadeja off Bumrah"
+                    Tap the mic and say e.g., "Arun is batting", "Four runs", or "Bumrah is bowling"
                 </p>
             </div>
 
@@ -206,16 +208,16 @@
         <!-- TAB 2: SCORECARD -->
         <div id="view-scorecard" class="hidden flex flex-col gap-4">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl">
-                <h3 class="text-sm font-bold mb-3 text-emerald-400"><i class="fa-solid fa-clipboard-user mr-2"></i>Batting Scorecard - <span id="card-team-a-name">Team A</span></h3>
+                <h3 class="text-sm font-bold mb-3 text-emerald-400"><i class="fa-solid fa-clipboard-user mr-2"></i>Batting Scorecard</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs text-left">
                         <thead>
                             <tr class="border-b border-slate-800 text-slate-400">
                                 <th class="pb-2">Batter</th>
+                                <th class="pb-2 text-center">Team</th>
                                 <th class="pb-2 text-center">R</th>
                                 <th class="pb-2 text-center">B</th>
                                 <th class="pb-2 text-center">4s</th>
-                                <th class="pb-2 text-center">6s</th>
                                 <th class="pb-2 text-right">SR</th>
                             </tr>
                         </thead>
@@ -227,14 +229,14 @@
             </div>
 
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl">
-                <h3 class="text-sm font-bold mb-3 text-emerald-400"><i class="fa-solid fa-bowling-ball mr-2"></i>Bowling Figures - <span id="card-team-b-name">Team B</span></h3>
+                <h3 class="text-sm font-bold mb-3 text-emerald-400"><i class="fa-solid fa-bowling-ball mr-2"></i>Bowling Figures</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs text-left">
                         <thead>
                             <tr class="border-b border-slate-800 text-slate-400">
                                 <th class="pb-2">Bowler</th>
+                                <th class="pb-2 text-center">Team</th>
                                 <th class="pb-2 text-center">O</th>
-                                <th class="pb-2 text-center">M</th>
                                 <th class="pb-2 text-center">R</th>
                                 <th class="pb-2 text-center">W</th>
                                 <th class="pb-2 text-right">Econ</th>
@@ -256,13 +258,6 @@
                     <canvas id="batterBoundaryChart"></canvas>
                 </div>
             </div>
-
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl">
-                <h3 class="text-xs font-bold mb-3 text-emerald-400 uppercase tracking-wider"><i class="fa-solid fa-chart-column mr-2"></i>Bowler Economy vs Wickets</h3>
-                <div class="h-44 relative">
-                    <canvas id="bowlerEconChart"></canvas>
-                </div>
-            </div>
         </div>
 
     </main>
@@ -272,10 +267,16 @@
         let matchSetup = {
             date: new Date().toISOString().split('T')[0],
             matchNum: "Match 1",
-            teamA: "Team A",
-            teamB: "Team B",
-            squadA: ["Arun", "Vijay", "Rohit", "Rahul", "Hardik"],
-            squadB: ["Bumrah", "Shami", "Jadeja", "Kuldeep", "Siraj"]
+            teamA: "WCC Cavaliers",
+            teamB: "Royal Strikers",
+            players: [
+                { name: "Arun", team: "Team A" },
+                { name: "Vijay", team: "Team A" },
+                { name: "Rohit", team: "Team A" },
+                { name: "Bumrah", team: "Team B" },
+                { name: "Jadeja", team: "Team B" },
+                { name: "Shami", team: "Team B" }
+            ]
         };
 
         let matchState = {
@@ -285,23 +286,22 @@
             extras: 0,
             striker: { name: "Arun", runs: 0, balls: 0, fours: 0, sixes: 0 },
             nonStriker: { name: "Vijay", runs: 0, balls: 0, fours: 0, sixes: 0 },
-            bowler: { name: "Bumrah", legalBallsBowled: 0, runsConceded: 0, wickets: 0, maidens: 0 },
+            bowler: { name: "Bumrah", legalBallsBowled: 0, runsConceded: 0, wickets: 0 },
             timeline: [],
             battersList: {},
-            bowlersList: {},
-            fieldersList: {},
-            dismissals: { caught: 0, bowled: 0, lbw: 0, runOut: 0, stumped: 0 }
+            bowlersList: {}
         };
 
         let isListening = false;
         let recognition = null;
-        let batterChart = null, bowlerChart = null;
+        let batterChart = null;
 
         window.onload = function() {
             document.getElementById('setup-date').value = matchSetup.date;
+            renderPlayerMappingRows();
             initSpeechRecognition();
             initCharts();
-            applyMatchSetup();
+            applyPlayerMapping();
         };
 
         function switchTab(tab) {
@@ -314,35 +314,62 @@
             if (tab === 'analytics') updateCharts();
         }
 
-        function applyMatchSetup() {
+        function renderPlayerMappingRows() {
+            const container = document.getElementById('player-mapping-container');
+            container.innerHTML = matchSetup.players.map((p, index) => `
+                <div class="flex gap-2 items-center bg-slate-950 p-2 rounded-xl border border-slate-800">
+                    <input type="text" value="${p.name}" placeholder="Player Name" onchange="updatePlayerName(${index}, this.value)" class="flex-1 bg-transparent border-none text-xs text-white focus:outline-none px-1">
+                    <select onchange="updatePlayerTeam(${index}, this.value)" class="bg-slate-900 text-emerald-400 border border-slate-800 rounded-lg px-2 py-1 text-xs focus:outline-none">
+                        <option value="Team A" ${p.team === 'Team A' ? 'selected' : ''}>Team A</option>
+                        <option value="Team B" ${p.team === 'Team B' ? 'selected' : ''}>Team B</option>
+                    </select>
+                    <button onclick="removePlayerRow(${index})" class="text-rose-400 hover:text-rose-300 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function addPlayerRow() {
+            matchSetup.players.push({ name: "New Player", team: "Team A" });
+            renderPlayerMappingRows();
+        }
+
+        function removePlayerRow(index) {
+            matchSetup.players.splice(index, 1);
+            renderPlayerMappingRows();
+        }
+
+        function updatePlayerName(index, val) {
+            matchSetup.players[index].name = val.trim();
+        }
+
+        function updatePlayerTeam(index, val) {
+            matchSetup.players[index].team = val;
+        }
+
+        function applyPlayerMapping() {
             matchSetup.date = document.getElementById('setup-date').value;
             matchSetup.matchNum = document.getElementById('setup-match-num').value || "Match 1";
             matchSetup.teamA = document.getElementById('setup-team-a').value || "Team A";
             matchSetup.teamB = document.getElementById('setup-team-b').value || "Team B";
 
-            const rawSquadA = document.getElementById('setup-squad-a').value;
-            matchSetup.squadA = rawSquadA.split(',').map(s => s.trim()).filter(Boolean);
-
-            const rawSquadB = document.getElementById('setup-squad-b').value;
-            matchSetup.squadB = rawSquadB.split(',').map(s => s.trim()).filter(Boolean);
-
-            if (matchSetup.squadA.length > 0) {
-                matchState.striker.name = matchSetup.squadA[0];
-                matchState.nonStriker.name = matchSetup.squadA[1] || "Batter 2";
-            }
-            if (matchSetup.squadB.length > 0) {
-                matchState.bowler.name = matchSetup.squadB[0];
-            }
-
+            // Initialize rosters based on mapping
             matchState.battersList = {};
-            matchSetup.squadA.forEach(name => {
-                matchState.battersList[name] = { runs: 0, balls: 0, fours: 0, sixes: 0, out: false };
+            matchState.bowlersList = {};
+
+            matchSetup.players.forEach(p => {
+                if (p.team === 'Team A') {
+                    matchState.battersList[p.name] = { runs: 0, balls: 0, fours: 0, sixes: 0, out: false, team: matchSetup.teamA };
+                } else {
+                    matchState.bowlersList[p.name] = { legalBalls: 0, runs: 0, wickets: 0, team: matchSetup.teamB };
+                }
             });
 
-            matchState.bowlersList = {};
-            matchSetup.squadB.forEach(name => {
-                matchState.bowlersList[name] = { legalBalls: 0, runs: 0, wickets: 0 };
-            });
+            // Set default striker/bowler if available
+            const teamABatters = matchSetup.players.filter(p => p.team === 'Team A');
+            const teamBBowlers = matchSetup.players.filter(p => p.team === 'Team B');
+
+            if (teamABatters.length > 0) matchState.striker.name = teamABatters[0].name;
+            if (teamBBowlers.length > 0) matchState.bowler.name = teamBBowlers[0].name;
 
             renderSquadChips();
             updateUI();
@@ -351,46 +378,40 @@
 
         function renderSquadChips() {
             const container = document.getElementById('squad-quick-chips');
-            let html = '';
-            matchSetup.squadA.forEach(player => {
-                html += `<button onclick="setStriker('${player}')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-900/50 px-3 py-1 rounded-full text-xs shrink-0">${player} (Bat)</button>`;
-            });
-            matchSetup.squadB.forEach(player => {
-                html += `<button onclick="setBowler('${player}')" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-900/50 px-3 py-1 rounded-full text-xs shrink-0">${player} (Bowl)</button>`;
-            });
-            container.innerHTML = html;
+            container.innerHTML = matchSetup.players.map(p => `
+                <button onclick="${p.team === 'Team A' ? `setStriker('${p.name}')` : `setBowler('${p.name}')`}" class="bg-slate-800 hover:bg-slate-700 ${p.team === 'Team A' ? 'text-emerald-300 border-emerald-900/50' : 'text-amber-300 border-amber-900/50'} border px-3 py-1 rounded-full text-xs shrink-0">
+                    ${p.name} (${p.team === 'Team A' ? 'Bat' : 'Bowl'})
+                </button>
+            `).join('');
         }
 
         function setStriker(name) {
             if (name === matchState.bowler.name) {
-                alert(`⚠️ Conflict Warning: "${name}" is currently set as the Bowler! A player cannot bat and bowl simultaneously.`);
+                alert(`⚠️ Conflict: "${name}" is currently set as Bowler!`);
                 return;
             }
             matchState.striker.name = name;
             if (!matchState.battersList[name]) {
-                matchState.battersList[name] = { runs: 0, balls: 0, fours: 0, sixes: 0, out: false };
+                matchState.battersList[name] = { runs: 0, balls: 0, fours: 0, sixes: 0, out: false, team: matchSetup.teamA };
             }
             updateUI();
         }
 
         function setBowler(name) {
             if (name === matchState.striker.name) {
-                alert(`⚠️ Conflict Warning: "${name}" is currently set as the Striker! The bowler cannot bowl to themselves.`);
+                alert(`⚠️ Conflict: "${name}" is currently set as Striker!`);
                 return;
             }
             matchState.bowler.name = name;
             if (!matchState.bowlersList[name]) {
-                matchState.bowlersList[name] = { legalBalls: 0, runs: 0, wickets: 0 };
+                matchState.bowlersList[name] = { legalBalls: 0, runs: 0, wickets: 0, team: matchSetup.teamB };
             }
             updateUI();
         }
 
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                document.getElementById('mic-status').innerText = "Not Supported";
-                return;
-            }
+            if (!SpeechRecognition) return;
             recognition = new SpeechRecognition();
             recognition.continuous = false;
             recognition.interimResults = false;
@@ -401,7 +422,6 @@
                 document.getElementById('transcript-display').innerText = `"${transcript}"`;
                 processCommentary(transcript);
             };
-
             recognition.onerror = function() { stopListening(); };
             recognition.onend = function() { stopListening(); };
         }
@@ -435,21 +455,15 @@
 
         function processCommentary(text) {
             const lower = text.toLowerCase();
-            let parsed = { runs: 0, isLegal: true, isWicket: false, extraType: null };
+            let parsed = { runs: 0, isLegal: true, isWicket: false };
 
-            if (lower.includes('is batting') || lower.includes('comes to bat') || lower.includes('on strike')) {
-                const nameMatch = text.match(/^([a-zA-Z\s]+)\s+(?:is batting|comes to bat|on strike)/i);
-                if (nameMatch && nameMatch[1]) {
-                    setStriker(nameMatch[1].trim());
-                    return;
-                }
+            if (lower.includes('is batting') || lower.includes('on strike')) {
+                const match = text.match(/^([a-zA-Z\s]+)\s+(?:is batting|on strike)/i);
+                if (match && match[1]) { setStriker(match[1].trim()); return; }
             }
-            if (lower.includes('is bowling') || lower.includes('bowling') || lower.includes('into the attack')) {
-                const bowlMatch = text.match(/^([a-zA-Z\s]+)\s+(?:is bowling|bowling|into the attack)/i);
-                if (bowlMatch && bowlMatch[1]) {
-                    setBowler(bowlMatch[1].trim());
-                    return;
-                }
+            if (lower.includes('is bowling') || lower.includes('bowling')) {
+                const match = text.match(/^([a-zA-Z\s]+)\s+(?:is bowling|bowling)/i);
+                if (match && match[1]) { setBowler(match[1].trim()); return; }
             }
 
             if (lower.includes('six') || lower.includes('6 runs')) {
@@ -473,18 +487,15 @@
                 matchState.striker.runs += 2;
                 matchState.bowler.runsConceded += 2;
             } else if (lower.includes('wide')) {
-                parsed.extraType = 'wide';
                 parsed.isLegal = false;
                 matchState.extras++;
                 matchState.runs++;
                 matchState.bowler.runsConceded++;
-            } else if (lower.includes('wicket') || lower.includes('bowled') || lower.includes('caught')) {
+            } else if (lower.includes('wicket') || lower.includes('bowled')) {
                 parsed.isWicket = true;
                 matchState.wickets++;
                 matchState.bowler.wickets++;
                 confetti({ particleCount: 100, spread: 100, origin: { y: 0.5 }, colors: ['#f43f5e', '#10b981'] });
-            } else if (lower.includes('dot') || lower.includes('no run')) {
-                parsed.runs = 0;
             } else {
                 parsed.runs = 1;
                 matchState.striker.runs += 1;
@@ -502,10 +513,11 @@
             matchState.bowlersList[matchState.bowler.name] = {
                 legalBalls: matchState.bowler.legalBallsBowled,
                 runs: matchState.bowler.runsConceded,
-                wickets: matchState.bowler.wickets
+                wickets: matchState.bowler.wickets,
+                team: matchSetup.teamB
             };
 
-            matchState.timeline.unshift(parsed.isWicket ? 'W' : (parsed.extraType ? 'Wd' : parsed.runs));
+            matchState.timeline.unshift(parsed.isWicket ? 'W' : parsed.runs);
             if (matchState.timeline.length > 15) matchState.timeline.pop();
 
             updateUI();
@@ -514,9 +526,6 @@
         function updateUI() {
             document.getElementById('match-header-info').innerText = `${matchSetup.matchNum} • ${matchSetup.date}`;
             document.getElementById('live-match-title').innerText = `${matchSetup.teamA} vs ${matchSetup.teamB}`;
-            document.getElementById('card-team-a-name').innerText = matchSetup.teamA;
-            document.getElementById('card-team-b-name').innerText = matchSetup.teamB;
-
             document.getElementById('total-score').innerText = `${matchState.runs}/${matchState.wickets}`;
             const overs = Math.floor(matchState.balls / 6) + '.' + (matchState.balls % 6);
             document.getElementById('total-overs').innerText = overs;
@@ -560,10 +569,10 @@
                 const sr = data.balls > 0 ? ((data.runs / data.balls) * 100).toFixed(1) : '0.0';
                 return `<tr class="border-b border-slate-900/50">
                     <td class="py-2 font-medium">${name}</td>
+                    <td class="py-2 text-center text-slate-400">${matchSetup.teamA}</td>
                     <td class="py-2 text-center font-bold">${data.runs}</td>
                     <td class="py-2 text-center">${data.balls}</td>
                     <td class="py-2 text-center">${data.fours}</td>
-                    <td class="py-2 text-center">${data.sixes}</td>
                     <td class="py-2 text-right">${sr}</td>
                 </tr>`;
             }).join('');
@@ -574,8 +583,8 @@
                 const eco = data.legalBalls > 0 ? (data.runs / (data.legalBalls / 6)).toFixed(1) : '0.0';
                 return `<tr class="border-b border-slate-900/50">
                     <td class="py-2 font-medium">${name}</td>
+                    <td class="py-2 text-center text-slate-400">${matchSetup.teamB}</td>
                     <td class="py-2 text-center">${o}</td>
-                    <td class="py-2 text-center">0</td>
                     <td class="py-2 text-center font-bold">${data.runs}</td>
                     <td class="py-2 text-center text-emerald-400 font-bold">${data.wickets}</td>
                     <td class="py-2 text-right">${eco}</td>
@@ -596,19 +605,6 @@
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
-
-            const ctx2 = document.getElementById('bowlerEconChart').getContext('2d');
-            bowlerChart = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(matchState.bowlersList),
-                    datasets: [
-                        { label: 'Runs', data: [0], backgroundColor: '#ef4444' },
-                        { label: 'Wickets', data: [0], backgroundColor: '#10b981' }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
         }
 
         function updateCharts() {
@@ -618,31 +614,24 @@
                 batterChart.data.datasets[1].data = Object.values(matchState.battersList).map(b => b.sixes);
                 batterChart.update();
             }
-
-            if (bowlerChart) {
-                bowlerChart.data.labels = Object.keys(matchState.bowlersList);
-                bowlerChart.data.datasets[0].data = Object.values(matchState.bowlersList).map(b => b.runs);
-                bowlerChart.data.datasets[1].data = Object.values(matchState.bowlersList).map(b => b.wickets);
-                bowlerChart.update();
-            }
         }
 
         function exportCSV() {
             let csv = `Match Info,Date: ${matchSetup.date},Match: ${matchSetup.matchNum},${matchSetup.teamA} vs ${matchSetup.teamB}\n\n`;
-            csv += "Category,Name,Runs,Balls/Overs,4s,6s/Wickets\n";
+            csv += "Category,Name,Team,Runs,Balls/Overs,4s,6s/Wickets\n";
             Object.entries(matchState.battersList).forEach(([name, d]) => {
-                csv += `Batter,${name},${d.runs},${d.balls},${d.fours},${d.sixes}\n`;
+                csv += `Batter,${name},${matchSetup.teamA},${d.runs},${d.balls},${d.fours},${d.sixes}\n`;
             });
             Object.entries(matchState.bowlersList).forEach(([name, d]) => {
                 const o = Math.floor(d.legalBalls / 6) + '.' + (d.legalBalls % 6);
-                csv += `Bowler,${name},${d.runs},${o},-,${d.wickets}\n`;
+                csv += `Bowler,${name},${matchSetup.teamB},${d.runs},${o},-,${d.wickets}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.setAttribute('href', url);
-            a.setAttribute('download', `${matchSetup.teamA}_vs_${matchSetup.teamB}_${matchSetup.matchNum}.csv`);
+            a.setAttribute('download', `${matchSetup.teamA}_vs_${matchSetup.teamB}.csv`);
             a.click();
         }
     </script>
