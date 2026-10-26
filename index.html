@@ -334,7 +334,6 @@
                 matchState.bowler.name = matchSetup.squadB[0];
             }
 
-            // Reset rosters
             matchState.battersList = {};
             matchSetup.squadA.forEach(name => {
                 matchState.battersList[name] = { runs: 0, balls: 0, fours: 0, sixes: 0, out: false };
@@ -363,6 +362,10 @@
         }
 
         function setStriker(name) {
+            if (name === matchState.bowler.name) {
+                alert(`⚠️ Conflict Warning: "${name}" is currently set as the Bowler! A player cannot bat and bowl simultaneously.`);
+                return;
+            }
             matchState.striker.name = name;
             if (!matchState.battersList[name]) {
                 matchState.battersList[name] = { runs: 0, balls: 0, fours: 0, sixes: 0, out: false };
@@ -371,6 +374,10 @@
         }
 
         function setBowler(name) {
+            if (name === matchState.striker.name) {
+                alert(`⚠️ Conflict Warning: "${name}" is currently set as the Striker! The bowler cannot bowl to themselves.`);
+                return;
+            }
             matchState.bowler.name = name;
             if (!matchState.bowlersList[name]) {
                 matchState.bowlersList[name] = { legalBalls: 0, runs: 0, wickets: 0 };
@@ -430,7 +437,6 @@
             const lower = text.toLowerCase();
             let parsed = { runs: 0, isLegal: true, isWicket: false, extraType: null };
 
-            // 1. Voice name matches
             if (lower.includes('is batting') || lower.includes('comes to bat') || lower.includes('on strike')) {
                 const nameMatch = text.match(/^([a-zA-Z\s]+)\s+(?:is batting|comes to bat|on strike)/i);
                 if (nameMatch && nameMatch[1]) {
@@ -446,7 +452,6 @@
                 }
             }
 
-            // 2. Scoring Events
             if (lower.includes('six') || lower.includes('6 runs')) {
                 parsed.runs = 6;
                 matchState.striker.sixes++;
