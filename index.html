@@ -3,1156 +3,1109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CricVoice AI - Mobile First Cricket Scorecard</title>
+    <title>CricVoice AI Scorecard</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        brand: { 500: '#10B981', 600: '#059669', 700: '#047857' }
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d'
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
-            50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.8); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
-        .listening-active { animation: pulse-glow 2s infinite; }
-        .drag-over { border-color: #10B981 !important; background-color: rgba(16, 185, 129, 0.1) !important; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(51, 65, 85, 0.8);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(71, 85, 105, 1);
+        }
+        @keyframes pulse-mic {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .mic-active {
+            animation: pulse-mic 1.5s infinite;
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
 
-    <!-- Header -->
-    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-3 py-2.5 flex items-center justify-between shadow-lg">
-        <div class="flex items-center space-x-2.5">
-            <div class="bg-emerald-600 text-white p-2 rounded-xl shadow-md">
-                <i class="fa-solid fa-microphone-lines text-base"></i>
+    <!-- TOP HEADER / NAVBAR -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 px-3 py-2.5">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg shadow-emerald-500/20">
+                    <i class="fas fa-microphone-alt"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-base tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+                        CricVoice AI
+                    </h1>
+                    <p class="text-[10px] text-slate-400 font-medium">Smart Scorecard & Squad Manager</p>
+                </div>
             </div>
-            <div>
-                <h1 class="text-sm font-bold tracking-tight">CricVoice AI</h1>
-                <p class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
-                    <span id="ai-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
-                    <span id="match-header-info">Match #1 • Active</span>
-                </p>
+
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVoiceHelpDrawer()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-lg text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition">
+                    <i class="fas fa-circle-question"></i> <span class="hidden sm:inline">Voice Help</span>
+                </button>
+                <button onclick="openHistoryDrawer()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-lg text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition">
+                    <i class="fas fa-history"></i> <span class="hidden sm:inline">History</span>
+                </button>
             </div>
-        </div>
-        <div class="flex items-center gap-1.5">
-            <button onclick="toggleHistoryDrawer()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
-                <i class="fa-solid fa-clock-rotate-left"></i> <span class="hidden sm:inline">History</span>
-            </button>
-            <button onclick="toggleHelpBox()" class="bg-indigo-950/80 border border-indigo-800/80 text-indigo-300 hover:bg-indigo-900 px-2 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
-                <i class="fa-solid fa-circle-question"></i>
-            </button>
-            <button id="undo-header-btn" onclick="undoLastBall()" class="bg-amber-950/60 border border-amber-800/60 text-amber-300 hover:bg-amber-900 px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
-                <i class="fa-solid fa-rotate-left"></i> <span id="undo-badge" class="bg-amber-500 text-slate-950 text-[9px] px-1 py-0.2 rounded-full font-bold">0</span>
-            </button>
-            <button onclick="switchTab('setup')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-xl text-slate-300 transition">
-                <i class="fa-solid fa-users-gear text-xs"></i>
-            </button>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="flex-1 max-w-lg w-full mx-auto p-3 pb-24 flex flex-col gap-3">
+    <!-- MAIN APP CONTAINER -->
+    <main class="max-w-5xl w-full mx-auto p-3 sm:p-4 flex-1 space-y-4">
 
-        <!-- Navigation Tabs -->
-        <div class="grid grid-cols-4 bg-slate-900 p-1 rounded-2xl border border-slate-800 text-[11px] font-semibold w-full">
-            <button onclick="switchTab('setup')" id="tab-setup" class="py-2 rounded-xl text-slate-400 hover:text-white transition">Roster</button>
-            <button onclick="switchTab('live')" id="tab-live" class="py-2 rounded-xl bg-emerald-600 text-white transition shadow">Live</button>
-            <button onclick="switchTab('scorecard')" id="tab-scorecard" class="py-2 rounded-xl text-slate-400 hover:text-white transition">Scorecard</button>
-            <button onclick="switchTab('analytics')" id="tab-analytics" class="py-2 rounded-xl text-slate-400 hover:text-white transition">Stats</button>
-        </div>
+        <!-- TAB NAVIGATION BAR -->
+        <nav class="bg-slate-900 border border-slate-800 p-1 rounded-2xl flex justify-between gap-1 shadow-md">
+            <button onclick="switchTab('roster')" id="nav-roster" class="nav-btn flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                <i class="fas fa-users text-sm"></i> <span>1. Squad</span>
+            </button>
+            <button onclick="switchTab('allocation')" id="nav-allocation" class="nav-btn flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                <i class="fas fa-balance-scale text-sm"></i> <span>2. Teams</span>
+            </button>
+            <button onclick="switchTab('live')" id="nav-live" class="nav-btn flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                <i class="fas fa-tower-broadcast text-sm"></i> <span>3. Live Match</span>
+            </button>
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-btn flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                <i class="fas fa-chart-pie text-sm"></i> <span>4. Analytics</span>
+            </button>
+        </nav>
 
-        <!-- TAB 0: TEAM & PLAYER MAPPING SETUP -->
-        <div id="view-setup" class="flex flex-col gap-3">
-            
-            <!-- Step 1: Input Roster & Match Info -->
-            <div id="setup-step-1" class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex flex-col gap-3 w-full">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider"><i class="fa-solid fa-people-group mr-1.5"></i>Master Roster & Skills</h2>
-                    <span class="text-[10px] text-slate-400">Step 1 of 2</span>
+        <!-- ========================================================================== -->
+        <!-- TAB 1: SQUAD ROSTER MANAGEMENT -->
+        <!-- ========================================================================== -->
+        <section id="tab-roster" class="tab-page space-y-3">
+            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex flex-wrap justify-between items-center gap-2">
+                <div>
+                    <h2 class="font-bold text-slate-100 text-sm sm:text-base flex items-center gap-2">
+                        <i class="fas fa-id-card text-emerald-400"></i> Master Player Roster
+                    </h2>
+                    <p class="text-xs text-slate-400">Tag player skill capabilities: Power Hitter (💥), Fast Bowler (⚡), Spin/Bowler (🌀), Deep Fielder (🦅)</p>
                 </div>
-
-                <!-- Match Details -->
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Match Date</label>
-                        <input type="date" id="setup-date" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Match Title</label>
-                        <input type="text" id="setup-match-num" value="Match 1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
-                    </div>
-                </div>
-
-                <!-- Team Names -->
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Team A Name</label>
-                        <input type="text" id="setup-team-a" value="Team A" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-medium text-slate-400 mb-1">Team B Name</label>
-                        <input type="text" id="setup-team-b" value="Team B" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
-                    </div>
-                </div>
-
-                <!-- Skill Legend -->
-                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[10px] flex flex-wrap gap-2 items-center justify-between">
-                    <span class="font-bold text-slate-400">Legend:</span>
-                    <span class="text-amber-300">💥<strong>P</strong>(Bat)</span>
-                    <span class="text-sky-300">⚡<strong>F</strong>(Fast)</span>
-                    <span class="text-emerald-300">🌀<strong>B</strong>(Bowl)</span>
-                    <span class="text-indigo-300">🦅<strong>D</strong>(Field)</span>
-                </div>
-
-                <!-- Player Mapping List -->
-                <div class="flex flex-col gap-2">
-                    <div class="flex justify-between items-center">
-                        <label class="text-[11px] font-medium text-slate-400 uppercase">Roster (<span id="total-roster-count">22</span>)</label>
-                        <button onclick="addPlayerRow()" class="text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-900 px-2 py-0.5 rounded-lg transition">
-                            <i class="fa-solid fa-plus mr-1"></i> Add
-                        </button>
-                    </div>
-
-                    <div id="player-mapping-container" class="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1 no-scrollbar">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-
-                <button onclick="showTeamPreview()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl font-bold text-xs text-white transition shadow-lg shadow-emerald-900/40 mt-1">
-                    Proceed to Team Allocation <i class="fa-solid fa-arrow-right ml-1"></i>
-                </button>
-            </div>
-
-            <!-- Step 2: Balanced Team Allocation -->
-            <div id="setup-step-2" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex flex-col gap-3 w-full">
-                <div class="flex flex-col gap-2 border-b border-slate-800 pb-2.5">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wider"><i class="fa-solid fa-scale-balanced mr-1.5"></i>Balanced Allocation</h2>
-                        <button onclick="backToRosterInput()" class="text-[11px] text-slate-400 hover:text-white bg-slate-800 px-2 py-1 rounded-lg"><i class="fa-solid fa-pen mr-1"></i> Edit Roster</button>
-                    </div>
-                    <button onclick="autoBalanceTeams()" class="w-full text-xs bg-indigo-950 text-indigo-300 border border-indigo-800/80 hover:bg-indigo-900 py-2 rounded-xl font-semibold transition shadow">
-                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Auto-Balance / Rehash ⚖️
+                <div class="flex items-center gap-2">
+                    <button onclick="loadDefaultPreset()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1">
+                        <i class="fas fa-cloud-arrow-down"></i> Load Preset Squad (22)
+                    </button>
+                    <button onclick="addPlayerRow()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                        <i class="fas fa-plus"></i> Add Player
                     </button>
                 </div>
+            </div>
 
-                <!-- 2-Column Team Allocation Container -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    
-                    <!-- Team A Card -->
-                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex flex-col gap-2">
-                        <div class="pb-2 border-b border-slate-800 flex flex-col gap-1">
-                            <div class="flex justify-between items-center">
-                                <span id="preview-team-a-title" class="font-bold text-xs text-emerald-400">Team A</span>
-                                <span class="text-[10px] font-black text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
-                                    Firepower: <span id="firepower-a">0</span> 🔥
-                                </span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Players: <strong id="count-a-players" class="text-white">0</strong></span>
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Power: <strong id="count-a-power" class="text-amber-400">0</strong></span>
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Fast: <strong id="count-a-fast" class="text-sky-400">0</strong></span>
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Bowlers: <strong id="count-a-bowlers" class="text-emerald-400">0</strong></span>
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded col-span-2">Deep: <strong id="count-a-deep" class="text-indigo-400">0</strong></span>
-                            </div>
-                            <div class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded">
-                                Captain: <strong id="captain-a-name" class="text-amber-400">None</strong>
-                            </div>
-                        </div>
-                        <div id="dropzone-Team A" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'Team A')" class="flex flex-col gap-1.5 min-h-[180px] max-h-[300px] overflow-y-auto p-1 border-2 border-dashed border-slate-800 rounded-xl no-scrollbar"></div>
-                    </div>
+            <!-- PLAYER ROSTER LIST -->
+            <div id="roster-list-container" class="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
+                <!-- Dynamic Player Rows Rendered Here -->
+            </div>
 
-                    <!-- Team B Card -->
-                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex flex-col gap-2">
-                        <div class="pb-2 border-b border-slate-800 flex flex-col gap-1">
-                            <div class="flex justify-between items-center">
-                                <span id="preview-team-b-title" class="font-bold text-xs text-amber-400">Team B</span>
-                                <span class="text-[10px] font-black text-amber-400 bg-amber-950 px-2 py-0.5 rounded border border-amber-800">
-                                    Firepower: <span id="firepower-b">0</span> 🔥
-                                </span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Players: <strong id="count-b-players" class="text-white">0</strong></span>
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Power: <strong id="count-b-power" class="text-amber-400">0</strong></span>
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Fast: <strong id="count-b-fast" class="text-sky-400">0</strong></span>
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Bowlers: <strong id="count-b-bowlers" class="text-emerald-400">0</strong></span>
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded col-span-2">Deep: <strong id="count-b-deep" class="text-indigo-400">0</strong></span>
-                            </div>
-                            <div class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded">
-                                Captain: <strong id="captain-b-name" class="text-amber-400">None</strong>
-                            </div>
-                        </div>
-                        <div id="dropzone-Team B" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'Team B')" class="flex flex-col gap-1.5 min-h-[180px] max-h-[300px] overflow-y-auto p-1 border-2 border-dashed border-slate-800 rounded-xl no-scrollbar"></div>
-                    </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="proceedToAllocation()" class="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2">
+                    Proceed to Balanced Team Allocation <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
 
+        <!-- ========================================================================== -->
+        <!-- TAB 2: BALANCED TEAM ALLOCATION -->
+        <!-- ========================================================================== -->
+        <section id="tab-allocation" class="tab-page hidden space-y-4">
+            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex justify-between items-center flex-wrap gap-2">
+                <div>
+                    <h2 class="font-bold text-slate-100 text-sm sm:text-base flex items-center gap-2">
+                        <i class="fas fa-scale-balanced text-cyan-400"></i> Balanced Team Allocation
+                    </h2>
+                    <p class="text-xs text-slate-400">Multi-criteria allocation engine with team scroll support and 👑 captain pick</p>
                 </div>
-
-                <button onclick="confirmAndStartMatch()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-2xl font-bold text-xs text-white transition shadow-lg shadow-emerald-900/40 mt-1">
-                    Freeze Teams & Start Match <i class="fa-solid fa-play ml-1"></i>
+                <button onclick="balanceTeams()" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5">
+                    <i class="fas fa-rotate"></i> Rehash / Auto-Balance Squads
                 </button>
             </div>
 
-        </div>
-
-        <!-- TAB 1: LIVE ACTION -->
-        <div id="view-live" class="hidden flex flex-col gap-3 w-full">
-            
-            <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 border border-slate-800 rounded-3xl p-4 shadow-xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 transform translate-x-4 -translate-y-4 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl"></div>
-                
-                <div class="flex justify-between items-center mb-2">
-                    <span id="live-match-title" class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold px-2 py-0.5 bg-emerald-950 rounded-full border border-emerald-800/40">Team A vs Team B</span>
-                    <span id="match-run-rate" class="text-xs text-slate-400 font-medium">RR: 0.00</span>
-                </div>
-
-                <div class="flex items-baseline gap-2 mb-3">
-                    <h2 id="total-score" class="text-3xl font-black tracking-tight text-white">0/0</h2>
-                    <span class="text-sm text-slate-400 font-semibold">(<span id="total-overs">0.0</span> Ov)</span>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2 pt-2.5 border-t border-slate-800 text-xs">
-                    <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/60">
-                        <div class="text-slate-400 text-[10px] font-medium mb-0.5 flex justify-between">
-                            <span>STRIKER</span>
-                            <span id="striker-sr" class="text-emerald-400">SR: 0.0</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- TEAM A CARD -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
+                            <span class="font-black text-cyan-400 text-sm flex items-center gap-1.5">
+                                <i class="fas fa-shield"></i> TEAM A
+                            </span>
+                            <span class="text-xs bg-cyan-950 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded-full font-bold" id="teamA-fp">
+                                FP: 0.0
+                            </span>
                         </div>
-                        <div id="striker-name" class="font-bold text-xs truncate text-white">Batter 1*</div>
-                        <div class="text-slate-300 text-[11px] mt-0.5"><span id="striker-runs">0</span> (<span id="striker-balls">0</span>b)</div>
+
+                        <div class="grid grid-cols-3 gap-1.5 text-[11px] mb-3 text-slate-300 bg-slate-950/80 p-2 rounded-xl border border-slate-800/80">
+                            <div>Players: <strong id="teamA-cnt" class="text-white">0</strong></div>
+                            <div>Hitters (💥): <strong id="teamA-p" class="text-amber-400">0</strong></div>
+                            <div>Fast (⚡): <strong id="teamA-f" class="text-blue-400">0</strong></div>
+                            <div>Bowlers (🌀): <strong id="teamA-b" class="text-purple-400">0</strong></div>
+                            <div>Deep Field (🦅): <strong id="teamA-d" class="text-emerald-400">0</strong></div>
+                            <div>Captain: <strong id="teamA-cap" class="text-yellow-400">None</strong></div>
+                        </div>
+
+                        <!-- SCROLLABLE CONTAINER FOR TEAM A -->
+                        <div class="max-h-[350px] overflow-y-auto custom-scrollbar space-y-1.5 pr-1" id="teamA-list-container">
+                            <!-- Dynamic Cards -->
+                        </div>
                     </div>
-                    <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/60">
-                        <div class="text-slate-400 text-[10px] font-medium mb-0.5 flex justify-between">
-                            <span>BOWLER</span>
-                            <span id="bowler-econ" class="text-emerald-400">Eco: 0.0</span>
+                </div>
+
+                <!-- TEAM B CARD -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
+                            <span class="font-black text-emerald-400 text-sm flex items-center gap-1.5">
+                                <i class="fas fa-shield"></i> TEAM B
+                            </span>
+                            <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded-full font-bold" id="teamB-fp">
+                                FP: 0.0
+                            </span>
                         </div>
-                        <div id="bowler-name" class="font-bold text-xs truncate text-white">Bowler 1</div>
-                        <div class="text-slate-300 text-[11px] mt-0.5"><span id="bowler-wickets">0</span>-<span id="bowler-runs-conceded">0</span> (<span id="bowler-overs">0.0</span>)</div>
+
+                        <div class="grid grid-cols-3 gap-1.5 text-[11px] mb-3 text-slate-300 bg-slate-950/80 p-2 rounded-xl border border-slate-800/80">
+                            <div>Players: <strong id="teamB-cnt" class="text-white">0</strong></div>
+                            <div>Hitters (💥): <strong id="teamB-p" class="text-amber-400">0</strong></div>
+                            <div>Fast (⚡): <strong id="teamB-f" class="text-blue-400">0</strong></div>
+                            <div>Bowlers (🌀): <strong id="teamB-b" class="text-purple-400">0</strong></div>
+                            <div>Deep Field (🦅): <strong id="teamB-d" class="text-emerald-400">0</strong></div>
+                            <div>Captain: <strong id="teamB-cap" class="text-yellow-400">None</strong></div>
+                        </div>
+
+                        <!-- SCROLLABLE CONTAINER FOR TEAM B -->
+                        <div class="max-h-[350px] overflow-y-auto custom-scrollbar space-y-1.5 pr-1" id="teamB-list-container">
+                            <!-- Dynamic Cards -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-xl flex flex-col gap-1.5">
-                <h3 class="text-[10px] font-semibold text-slate-400 uppercase">Quick Select Active Players</h3>
-                <div class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar" id="squad-quick-chips"></div>
-            </div>
-
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex flex-col items-center gap-3">
-                <div class="w-full flex justify-between items-center">
-                    <span class="text-[10px] font-semibold text-slate-400 uppercase">Voice Recognition Engine</span>
-                    <span id="mic-status" class="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">Ready</span>
-                </div>
-
-                <button id="mic-btn" onclick="toggleListening()" class="w-16 h-16 rounded-full bg-emerald-600 hover:bg-emerald-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-emerald-900/50 transition transform active:scale-95">
-                    <i id="mic-icon" class="fa-solid fa-microphone"></i>
+            <div class="flex justify-end pt-2">
+                <button onclick="startMatch()" class="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2">
+                    Start Match & Live Scoring <i class="fas fa-play"></i>
                 </button>
-
-                <p id="transcript-display" class="text-xs text-center text-slate-300 italic min-h-[2rem] flex items-center justify-center px-2">
-                    Tap mic and say: "Rajesh is the batsman and Aaji is the bowler" or "Four runs"
-                </p>
             </div>
+        </section>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-xl">
-                <div class="flex justify-between items-center mb-2.5">
-                    <h3 class="text-[10px] font-semibold text-slate-400 uppercase">Quick Scoring Presets</h3>
-                    <button onclick="undoLastBall()" class="text-[10px] text-amber-400 hover:text-amber-300"><i class="fa-solid fa-rotate-left mr-1"></i>Undo Last Ball</button>
-                </div>
-                <div class="grid grid-cols-4 gap-1.5 text-xs">
-                    <button onclick="simulateCommentary('four runs')" class="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/40 py-2 rounded-xl font-semibold text-emerald-300 transition">Four 🏏</button>
-                    <button onclick="simulateCommentary('six runs')" class="bg-emerald-900/80 hover:bg-emerald-700 py-2 rounded-xl font-bold text-white transition shadow">Six 🚀</button>
-                    <button onclick="simulateCommentary('single taken')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">1 Run</button>
-                    <button onclick="simulateCommentary('dot ball')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">Dot</button>
-                    <button onclick="simulateCommentary('wide ball')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">Wide</button>
-                    <button onclick="simulateCommentary('wicket fall')" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800/40 py-2 rounded-xl font-semibold text-rose-300 transition">Wicket ☝️</button>
-                    <button onclick="simulateCommentary('two runs')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">2 Runs</button>
-                    <button onclick="simulateCommentary('three runs')" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl font-medium transition">3 Runs</button>
-                </div>
-            </div>
-
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-xl flex flex-col gap-2">
-                <h3 class="text-[10px] font-semibold text-slate-400 uppercase">Recent Ball-by-Ball Timeline</h3>
-                <div id="ball-feed" class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-                    <span class="text-xs text-slate-500 italic py-1">No balls bowled yet.</span>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- TAB 2: SCORECARD -->
-        <div id="view-scorecard" class="hidden flex flex-col gap-3 w-full">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3.5 shadow-xl">
-                <h3 class="text-xs font-bold mb-2.5 text-emerald-400 flex items-center justify-between">
-                    <span><i class="fa-solid fa-clipboard-user mr-1.5"></i>Batting Scorecard</span>
-                    <span id="scorecard-batting-team-title" class="text-[11px] font-semibold text-slate-400">Team A</span>
-                </h3>
-                <div class="overflow-x-auto no-scrollbar">
-                    <table class="w-full text-xs text-left">
-                        <thead>
-                            <tr class="border-b border-slate-800 text-slate-400 text-[11px]">
-                                <th class="pb-2">Batter</th>
-                                <th class="pb-2">Status</th>
-                                <th class="pb-2 text-center">R</th>
-                                <th class="pb-2 text-center">B</th>
-                                <th class="pb-2 text-center">4s</th>
-                                <th class="pb-2 text-right">SR</th>
-                            </tr>
-                        </thead>
-                        <tbody id="batting-table-body">
-                            <tr><td colspan="6" class="text-center text-slate-500 py-4">No data yet</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3.5 shadow-xl">
-                <h3 class="text-xs font-bold mb-2.5 text-emerald-400 flex items-center justify-between">
-                    <span><i class="fa-solid fa-bowling-ball mr-1.5"></i>Bowling Figures</span>
-                    <span id="scorecard-bowling-team-title" class="text-[11px] font-semibold text-slate-400">Team B</span>
-                </h3>
-                <div class="overflow-x-auto no-scrollbar">
-                    <table class="w-full text-xs text-left">
-                        <thead>
-                            <tr class="border-b border-slate-800 text-slate-400 text-[11px]">
-                                <th class="pb-2">Bowler</th>
-                                <th class="pb-2 text-center">O</th>
-                                <th class="pb-2 text-center">R</th>
-                                <th class="pb-2 text-center">W</th>
-                                <th class="pb-2 text-right">Econ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bowling-table-body">
-                            <tr><td colspan="5" class="text-center text-slate-500 py-4">No data yet</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <!-- ========================================================================== -->
+        <!-- TAB 3: LIVE MATCH SCORING & VOICE COMMANDS -->
+        <!-- ========================================================================== -->
+        <section id="tab-live" class="tab-page hidden space-y-4">
             
-            <button onclick="saveCurrentMatchToHistory()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-2xl font-bold text-xs text-white transition shadow-lg shadow-indigo-900/40">
-                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save Match to History Archive
-            </button>
-        </div>
+            <!-- LIVE MATCH HEADER SCOREBOARD -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-4 shadow-xl relative overflow-hidden">
+                <div class="flex justify-between items-center mb-2 text-xs">
+                    <span id="live-batting-team" class="font-extrabold text-cyan-400 uppercase tracking-wider">Team A Batting</span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="undoLastBall()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition">
+                            <i class="fas fa-rotate-left"></i> Undo Ball
+                        </button>
+                        <span id="live-overs" class="bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-lg font-mono font-bold text-white">0.0 Overs</span>
+                    </div>
+                </div>
 
-        <!-- TAB 3: ANALYTICS -->
-        <div id="view-analytics" class="hidden flex flex-col gap-3 w-full">
-            <div class="grid grid-cols-3 bg-slate-900 p-1 rounded-2xl border border-slate-800 text-[11px] font-semibold">
-                <button onclick="switchAnalyticsSubTab('batters')" id="subtab-batters" class="py-2 rounded-xl bg-emerald-600 text-white transition">Batsmen</button>
-                <button onclick="switchAnalyticsSubTab('bowlers')" id="subtab-bowlers" class="py-2 rounded-xl text-slate-400 hover:text-white transition">Bowlers</button>
-                <button onclick="switchAnalyticsSubTab('fielders')" id="subtab-fielders" class="py-2 rounded-xl text-slate-400 hover:text-white transition">Fielders</button>
-            </div>
+                <div class="flex justify-between items-baseline my-1">
+                    <div class="text-4xl sm:text-5xl font-black text-white font-mono tracking-tight" id="live-score">0 / 0</div>
+                    <div class="text-right text-xs text-slate-400">
+                        CRR: <span id="live-crr" class="font-bold text-slate-200 font-mono">0.00</span>
+                    </div>
+                </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3.5 shadow-xl">
-                <h3 id="analytics-title" class="text-xs font-bold mb-3 text-emerald-400 uppercase tracking-wider">Batsmen Performance (Runs & SR)</h3>
-                <div class="h-52 relative">
-                    <canvas id="analyticsChart"></canvas>
+                <!-- BOTH BATSMEN IN THE MIDDLE DISPLAY WITH ACTIVE BATSMAN MARKED * -->
+                <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-800 text-left">
+                    <div id="striker-box" class="bg-slate-950/80 border border-amber-500/60 p-2.5 rounded-xl flex justify-between items-center shadow-inner">
+                        <div>
+                            <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">Striker *</span>
+                            <select id="striker-select" onchange="changeStriker(this.value)" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
+                                <!-- Dynamic Batters -->
+                            </select>
+                        </div>
+                        <span id="striker-stats" class="font-mono text-xs text-amber-300 font-bold">0 (0)</span>
+                    </div>
+
+                    <div id="nonstriker-box" class="bg-slate-950/40 border border-slate-800 p-2.5 rounded-xl flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Non-Striker</span>
+                            <select id="nonstriker-select" onchange="changeNonStriker(this.value)" class="bg-transparent text-xs font-bold text-slate-300 focus:outline-none cursor-pointer">
+                                <!-- Dynamic Batters -->
+                            </select>
+                        </div>
+                        <span id="nonstriker-stats" class="font-mono text-xs text-slate-400">0 (0)</span>
+                    </div>
+                </div>
+
+                <!-- BOWLER SELECTOR & TIMELINE -->
+                <div class="mt-2 bg-slate-950/60 border border-slate-800 p-2.5 rounded-xl flex justify-between items-center text-xs">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-baseball text-blue-400"></i>
+                        <div>
+                            <span class="text-[10px] text-slate-400 uppercase font-bold block">Current Bowler</span>
+                            <select id="bowler-select" onchange="changeBowler(this.value)" class="bg-transparent text-xs font-bold text-blue-300 focus:outline-none cursor-pointer">
+                                <!-- Dynamic Bowlers -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span id="bowler-stats" class="font-mono text-xs text-blue-300 block font-bold">0-0 (0.0)</span>
+                        <div id="recent-balls" class="flex gap-1 mt-1 justify-end"></div>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- VOICE & MANUAL SCORING CONTROLS -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-xs text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fas fa-microphone text-cyan-400"></i> Voice Input & Quick Actions
+                    </h3>
+                    <span id="voice-status" class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-mono">Mic Ready</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="mic-btn" onclick="toggleListening()" class="p-3 bg-red-600 hover:bg-red-500 text-white rounded-xl shadow-md transition flex items-center justify-center shrink-0">
+                        <i class="fas fa-microphone text-lg"></i>
+                    </button>
+                    <div class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-cyan-300 flex items-center min-h-[42px]" id="voice-transcript">
+                        Click mic or say "Dot ball", "Four", "Single", "Out caught"
+                    </div>
+                </div>
+
+                <!-- QUICK RUN BUTTONS -->
+                <div class="grid grid-cols-4 gap-1.5">
+                    <button onclick="triggerQuickBall(0)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-xl text-xs font-bold transition">0 (Dot)</button>
+                    <button onclick="triggerQuickBall(1)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-xl text-xs font-bold transition">1 Run</button>
+                    <button onclick="triggerQuickBall(2)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-xl text-xs font-bold transition">2 Runs</button>
+                    <button onclick="triggerQuickBall(3)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-xl text-xs font-bold transition">3 Runs</button>
+                    <button onclick="triggerQuickBall(4)" class="bg-amber-600/80 hover:bg-amber-500 text-white py-2 rounded-xl text-xs font-black transition">4 FOUR</button>
+                    <button onclick="triggerQuickBall(6)" class="bg-purple-600/80 hover:bg-purple-500 text-white py-2 rounded-xl text-xs font-black transition">6 SIX</button>
+                    <button onclick="triggerQuickExtra('WD')" class="bg-slate-800 hover:bg-slate-700 text-blue-300 py-2 rounded-xl text-xs font-bold transition">Wide</button>
+                    <button onclick="triggerQuickExtra('NB')" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 py-2 rounded-xl text-xs font-bold transition">No Ball</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="triggerQuickWicket()" class="bg-red-600 hover:bg-red-500 text-white py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow">
+                        <i class="fas fa-skull"></i> DISMISSAL / OUT
+                    </button>
+                    <button onclick="swapStrike()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                        <i class="fas fa-arrows-rotate"></i> Swap Strike
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================================== -->
+        <!-- TAB 4: VISUAL ANALYTICS (CHART.JS) -->
+        <!-- ========================================================================== -->
+        <section id="tab-analytics" class="tab-page hidden space-y-4">
+            <div class="bg-slate-900 border border-slate-800 p-2 rounded-2xl flex gap-1">
+                <button onclick="switchAnalyticsSubTab('batsmen')" id="subtab-btn-batsmen" class="subtab-btn flex-1 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 text-white transition">Batsmen Analytics</button>
+                <button onclick="switchAnalyticsSubTab('bowlers')" id="subtab-btn-bowlers" class="subtab-btn flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition">Bowler Analytics</button>
+                <button onclick="switchAnalyticsSubTab('fielders')" id="subtab-btn-fielders" class="subtab-btn flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition">Fielder Analytics</button>
+            </div>
+
+            <!-- BATSMEN ANALYTICS -->
+            <div id="analytics-batsmen" class="space-y-4">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5">
+                    <h3 class="font-bold text-xs text-cyan-400 mb-2 uppercase tracking-wider">Batsmen Run Breakdown (0s, 1s, 2s, 3s, 4s, 5s, 6s)</h3>
+                    <div class="relative h-64 w-full">
+                        <canvas id="batsmanRunChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5">
+                    <h3 class="font-bold text-xs text-slate-300 mb-2 uppercase tracking-wider">Detailed Batting Metrics</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-800">
+                                    <th class="p-2">Batsman</th>
+                                    <th class="p-2 text-right">Runs</th>
+                                    <th class="p-2 text-right">Balls</th>
+                                    <th class="p-2 text-center">Run Distribution (0/1/2/3/4/5/6)</th>
+                                    <th class="p-2 text-right">SR</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batsmen-table-body" class="divide-y divide-slate-800/60"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOWLERS ANALYTICS -->
+            <div id="analytics-bowlers" class="hidden space-y-4">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5">
+                    <h3 class="font-bold text-xs text-blue-400 mb-2 uppercase tracking-wider">Bowler Runs Given & Dots Breakdown</h3>
+                    <div class="relative h-64 w-full">
+                        <canvas id="bowlerRunChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5">
+                    <h3 class="font-bold text-xs text-slate-300 mb-2 uppercase tracking-wider">Detailed Bowling Metrics</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-800">
+                                    <th class="p-2">Bowler</th>
+                                    <th class="p-2 text-right">Balls</th>
+                                    <th class="p-2 text-right">Dots</th>
+                                    <th class="p-2 text-right">Wickets</th>
+                                    <th class="p-2 text-right">Econ</th>
+                                    <th class="p-2 text-right">Bowling SR</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bowlers-table-body" class="divide-y divide-slate-800/60"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FIELDERS ANALYTICS -->
+            <div id="analytics-fielders" class="hidden space-y-4">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5">
+                    <h3 class="font-bold text-xs text-emerald-400 mb-2 uppercase tracking-wider">Fielding Actions (Catches, Run-Outs, Stumpings)</h3>
+                    <div class="relative h-64 w-full">
+                        <canvas id="fielderChart"></canvas>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="fielder-cards-container"></div>
+            </div>
+        </section>
 
     </main>
 
-    <!-- Voice Confirmation Modal -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 w-full max-w-sm shadow-2xl flex flex-col gap-3">
+    <!-- VOICE COMMAND HELP DRAWER -->
+    <div id="voice-help-drawer" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-end">
+        <div class="bg-slate-900 w-full max-w-md h-full p-4 overflow-y-auto border-l border-slate-800 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3">
+                    <h3 class="font-bold text-base text-white flex items-center gap-2">
+                        <i class="fas fa-microphone text-cyan-400"></i> Voice Commands Help
+                    </h3>
+                    <button onclick="toggleVoiceHelpDrawer()" class="text-slate-400 hover:text-white p-1">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <p class="text-xs text-slate-400 mb-3">Speak clearly into your microphone or click any phrase below to test simulation:</p>
+                <div class="space-y-2">
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-xs font-bold text-cyan-300 block mb-1">Runs & Boundaries</span>
+                        <div class="flex flex-wrap gap-1">
+                            <button onclick="testVoiceCommand('Dot ball')" class="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-200 px-2 py-1 rounded border border-slate-800">"Dot ball"</button>
+                            <button onclick="testVoiceCommand('Single')" class="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-200 px-2 py-1 rounded border border-slate-800">"Single"</button>
+                            <button onclick="testVoiceCommand('Two runs')" class="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-200 px-2 py-1 rounded border border-slate-800">"Two runs"</button>
+                            <button onclick="testVoiceCommand('Four')" class="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-200 px-2 py-1 rounded border border-slate-800">"Four"</button>
+                            <button onclick="testVoiceCommand('Six')" class="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-200 px-2 py-1 rounded border border-slate-800">"Six"</button>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                        <span class="text-xs font-bold text-amber-300 block mb-1">Extras & Dismissals</span>
+                        <div class="flex flex-wrap gap-1">
+                            <button onclick="testVoiceCommand('Wide ball')" class="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-200 px-2 py-1 rounded border border-slate-800">"Wide ball"</button>
+                            <button onclick="testVoiceCommand('No ball')" class="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-200 px-2 py-1 rounded border border-slate-800">"No ball"</button>
+                            <button onclick="testVoiceCommand('Out caught Sridhar')" class="text-[11px] bg-slate-900 hover:bg-slate-800 text-slate-200 px-2 py-1 rounded border border-slate-800">"Out caught Sridhar"</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="toggleVoiceHelpDrawer()" class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl text-xs transition">Close Help</button>
+        </div>
+    </div>
+
+    <!-- VOICE COMMAND CONFIRMATION MODAL -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-4 shadow-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="font-bold text-xs text-amber-400"><i class="fa-solid fa-clipboard-check mr-1.5"></i>Confirm Commentary</h3>
-                <button onclick="closeConfirmModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="font-bold text-sm text-cyan-400 flex items-center gap-1.5">
+                    <i class="fas fa-circle-check"></i> Confirm Ball Action
+                </h3>
+                <button onclick="closeConfirmationModal()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
-            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-300 italic text-center" id="modal-speech-transcript">
-                "four runs"
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
+
+            <div class="space-y-2 text-xs">
                 <div>
-                    <label class="block text-slate-400 text-[10px] mb-1">Runs</label>
-                    <select id="modal-runs-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-white text-xs">
-                        <option value="0">0 Runs (Dot)</option>
+                    <label class="text-slate-400 block mb-1">Runs Off Bat</label>
+                    <select id="modal-runs" class="w-full bg-slate-950 border border-slate-800 text-white p-2 rounded-xl font-bold">
+                        <option value="0">0 Runs</option>
                         <option value="1">1 Run</option>
                         <option value="2">2 Runs</option>
                         <option value="3">3 Runs</option>
                         <option value="4">4 Runs</option>
+                        <option value="5">5 Runs</option>
                         <option value="6">6 Runs</option>
                     </select>
                 </div>
+
                 <div>
-                    <label class="block text-slate-400 text-[10px] mb-1">Extra / Wicket</label>
-                    <select id="modal-extra-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-white text-xs">
-                        <option value="none">Legal Ball</option>
-                        <option value="wide">Wide</option>
-                        <option value="wicket">Wicket ☝️</option>
+                    <label class="text-slate-400 block mb-1">Extra Delivery</label>
+                    <select id="modal-extra" class="w-full bg-slate-950 border border-slate-800 text-white p-2 rounded-xl">
+                        <option value="NONE">None (Legal Delivery)</option>
+                        <option value="WD">Wide (WD)</option>
+                        <option value="NB">No Ball (NB)</option>
                     </select>
                 </div>
+
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="modal-is-wicket" class="w-4 h-4 accent-red-500 rounded" onchange="toggleWicketFielderOption()">
+                    <label for="modal-is-wicket" class="text-red-400 font-bold">Dismissal / Wicket</label>
+                </div>
+
+                <div id="modal-fielder-box" class="hidden">
+                    <label class="text-slate-400 block mb-1">Fielder Involved (Catch/Run-out/Stumping)</label>
+                    <select id="modal-fielder" class="w-full bg-slate-950 border border-slate-800 text-white p-2 rounded-xl"></select>
+                </div>
             </div>
-            <div>
-                <label class="block text-slate-400 text-[10px] mb-1">Fielder Name (If Caught)</label>
-                <input type="text" id="modal-fielder-input" placeholder="e.g. Sridhar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-white">
-            </div>
-            <div class="flex gap-2 pt-1">
-                <button onclick="closeConfirmModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl font-medium text-xs text-slate-300">Discard</button>
-                <button onclick="commitModalBall()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl font-bold text-xs text-white">Commit Ball</button>
+
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+                <button onclick="closeConfirmationModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-xs transition">Cancel</button>
+                <button onclick="commitStagedBall()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black py-2 rounded-xl text-xs shadow transition">Commit Ball</button>
             </div>
         </div>
     </div>
 
-    <!-- Match History Drawer -->
-    <div id="history-drawer" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-end">
-        <div class="bg-slate-900 border-l border-slate-800 w-full max-w-sm h-full p-4 flex flex-col gap-3 shadow-2xl overflow-y-auto">
+    <!-- MATCH HISTORY MODAL -->
+    <div id="history-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="font-bold text-sm text-emerald-400"><i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Saved Match Archive</h3>
-                <button onclick="toggleHistoryDrawer()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-base"></i></button>
+                <h3 class="font-bold text-sm text-amber-400 flex items-center gap-1.5"><i class="fas fa-history"></i> Match History</h3>
+                <button onclick="closeHistoryDrawer()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
-            <div id="match-history-list" class="flex flex-col gap-2.5 flex-1">
-                <span class="text-xs text-slate-500 italic text-center py-6">No saved matches yet</span>
-            </div>
-            <button onclick="toggleHistoryDrawer()" class="w-full bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-semibold text-slate-300">Close</button>
+            <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar"></div>
+            <button onclick="closeHistoryDrawer()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2 rounded-xl text-xs transition">Close</button>
         </div>
     </div>
 
-    <!-- Voice Help Drawer -->
-    <div id="help-drawer" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-end">
-        <div class="bg-slate-900 border-l border-slate-800 w-full max-w-sm h-full p-4 flex flex-col gap-3 shadow-2xl overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h3 class="font-bold text-sm text-indigo-400"><i class="fa-solid fa-headset mr-1.5"></i>Voice Command Guide</h3>
-                <button onclick="toggleHelpBox()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-base"></i></button>
-            </div>
-            <div class="flex flex-col gap-3 text-xs">
-                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <span class="font-bold text-emerald-400 block mb-1">Player Assignments</span>
-                    <p class="text-slate-300 font-mono text-[11px] mb-1">"Rajesh is the batsman"</p>
-                    <p class="text-slate-300 font-mono text-[11px] mb-1">"Aaji is the bowler"</p>
-                    <p class="text-slate-300 font-mono text-[11px]">"Rajesh is the batsman and Aaji is the bowler"</p>
-                </div>
-                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <span class="font-bold text-amber-400 block mb-1">Scoring Runs</span>
-                    <p class="text-slate-300 font-mono text-[11px] mb-1">"Four runs" / "Six runs"</p>
-                    <p class="text-slate-300 font-mono text-[11px] mb-1">"Single taken" / "Two runs"</p>
-                    <p class="text-slate-300 font-mono text-[11px]">"Dot ball" / "Wide ball"</p>
-                </div>
-                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <span class="font-bold text-rose-400 block mb-1">Wickets & Dismissals</span>
-                    <p class="text-slate-300 font-mono text-[11px]">"Caught by Sridhar bowled Aaji"</p>
-                </div>
-            </div>
-            <button onclick="toggleHelpBox()" class="w-full bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-semibold text-slate-300 mt-auto">Close</button>
-        </div>
-    </div>
-
-    <!-- JavaScript Application Logic -->
+    <!-- MAIN JAVASCRIPT APPLICATION LOGIC -->
     <script>
-        let matchSetup = {
-            date: new Date().toISOString().split('T')[0],
-            matchNum: "Match 1",
-            teamA: "Team A",
-            teamB: "Team B",
-            requireConfirmation: true,
-            players: [
-                { name: "Arun", team: "Team A", skills: { P: true, F: true, B: false, D: true }, isCaptain: true },
-                { name: "Siva", team: "Team A", skills: { P: true, F: false, B: true, D: false }, isCaptain: false },
-                { name: "Jayanth", team: "Team A", skills: { P: true, F: true, B: false, D: false }, isCaptain: false },
-                { name: "CFO", team: "Team A", skills: { P: false, F: false, B: true, D: true }, isCaptain: false },
-                { name: "Prash", team: "Team A", skills: { P: false, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Ganesh", team: "Team A", skills: { P: true, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Johnny", team: "Team A", skills: { P: true, F: false, B: false, D: true }, isCaptain: false },
-                { name: "Danny", team: "Team A", skills: { P: false, F: true, B: false, D: false }, isCaptain: false },
-                { name: "Mahen", team: "Team A", skills: { P: true, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Sridhar", team: "Team B", skills: { P: false, F: false, B: true, D: false }, isCaptain: true },
-                { name: "Ponting", team: "Team B", skills: { P: false, F: false, B: false, D: true }, isCaptain: false },
-                { name: "Gucci", team: "Team B", skills: { P: false, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Rajesh", team: "Team B", skills: { P: true, F: false, B: true, D: false }, isCaptain: false },
-                { name: "Viswa", team: "Team B", skills: { P: false, F: false, B: false, D: false }, isCaptain: false },
-                { name: "Anand", team: "Team B", skills: { P: false, F: false, B: false, D: false }, isCaptain: false },
-                { name: "Ram", team: "Team B", skills: { P: false, F: false, B: false, D: false }, isCaptain: false },
-                { name: "Madhu", team: "Team B", skills: { P: false, F: false, B: true, D: false }, isCaptain: false },
-                { name: "Abhi", team: "Team B", skills: { P: false, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Puppy", team: "Team B", skills: { P: false, F: false, B: true, D: true }, isCaptain: false },
-                { name: "Juli", team: "Team B", skills: { P: false, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Sesha", team: "Team B", skills: { P: false, F: false, B: false, D: true }, isCaptain: false },
-                { name: "PSS", team: "Team B", skills: { P: false, F: true, B: false, D: true }, isCaptain: false }
-            ]
-        };
+        // Default Preset Roster (22 requested players with skills)
+        const DEFAULT_ROSTER = [
+            { id: 'p1', name: 'Arun', batP: true, bowlF: true, bowlB: false, fieldD: true },
+            { id: 'p2', name: 'Siva', batP: true, bowlF: false, bowlB: true, fieldD: false },
+            { id: 'p3', name: 'Jayanth', batP: true, bowlF: true, bowlB: false, fieldD: false },
+            { id: 'p4', name: 'CFO', batP: false, bowlF: false, bowlB: true, fieldD: true },
+            { id: 'p5', name: 'Prash', batP: false, bowlF: true, bowlB: false, fieldD: true },
+            { id: 'p6', name: 'Ganesh', batP: true, bowlF: true, bowlB: false, fieldD: true },
+            { id: 'p7', name: 'Johnny', batP: true, bowlF: false, bowlB: false, fieldD: true },
+            { id: 'p8', name: 'Danny', batP: false, bowlF: true, bowlB: false, fieldD: false },
+            { id: 'p9', name: 'Mahen', batP: true, bowlF: true, bowlB: false, fieldD: true },
+            { id: 'p10', name: 'Sridhar', batP: false, bowlF: false, bowlB: true, fieldD: false },
+            { id: 'p11', name: 'Ponting', batP: false, bowlF: false, bowlB: false, fieldD: true },
+            { id: 'p12', name: 'Gucci', batP: false, bowlF: true, bowlB: false, fieldD: true },
+            { id: 'p13', name: 'Rajesh', batP: true, bowlF: false, bowlB: true, fieldD: false },
+            { id: 'p14', name: 'Viswa', batP: false, bowlF: false, bowlB: false, fieldD: false },
+            { id: 'p15', name: 'Anand', batP: false, bowlF: false, bowlB: false, fieldD: false },
+            { id: 'p16', name: 'Ram', batP: false, bowlF: false, bowlB: false, fieldD: false },
+            { id: 'p17', name: 'Madhu', batP: false, bowlF: false, bowlB: true, fieldD: false },
+            { id: 'p18', name: 'Abhi', batP: false, bowlF: true, bowlB: false, fieldD: true },
+            { id: 'p19', name: 'Puppy', batP: false, bowlF: false, bowlB: true, fieldD: true },
+            { id: 'p20', name: 'Juli', batP: false, bowlF: true, bowlB: false, fieldD: true },
+            { id: 'p21', name: 'Sesha', batP: false, bowlF: false, bowlB: false, fieldD: true },
+            { id: 'p22', name: 'PSS', batP: false, bowlF: true, bowlB: false, fieldD: true }
+        ];
 
-        let matchState = {
+        let roster = [];
+        let teamA = [];
+        let teamB = [];
+        let captainA = null;
+        let captainB = null;
+
+        let gameState = {
             runs: 0,
             wickets: 0,
             balls: 0,
-            extras: 0,
-            striker: { name: "Arun", runs: 0, balls: 0, fours: 0, sixes: 0 },
-            nonStriker: { name: "Johnny", runs: 0, balls: 0, fours: 0, sixes: 0 },
-            bowler: { name: "Sridhar", legalBallsBowled: 0, runsConceded: 0, wickets: 0 },
-            timeline: [],
-            battersList: {},
-            bowlersList: {},
-            fieldersList: {}
+            overs: 0,
+            striker: '',
+            nonStriker: '',
+            bowler: '',
+            recentBalls: []
         };
 
-        let undoStack = [];
-        let pendingParsedBall = null;
-        let draggedPlayerIndex = null;
+        let playerStats = {}; // Stores breakdown per player
+        let historyStack = [];
+        let pendingBall = null;
         let isListening = false;
-        let recognition = null;
-        let analyticsChart = null;
-        let currentAnalyticsSubTab = 'batters';
+        let speechRecognition = null;
 
+        let chartInstances = {};
+
+        // INITIALIZE ON LOAD
         window.onload = function() {
-            document.getElementById('setup-date').value = matchSetup.date;
-            renderPlayerMappingRows();
+            loadRosterFromStorage();
+            if (roster.length === 0) {
+                loadDefaultPreset();
+            } else {
+                renderRoster();
+            }
+            switchTab('roster');
             initSpeechRecognition();
-            initAnalyticsChart();
         };
 
-        function switchTab(tab) {
-            ['setup', 'live', 'scorecard', 'analytics'].forEach(t => {
-                document.getElementById(`view-${t}`).classList.add('hidden');
-                document.getElementById(`tab-${t}`).className = "py-2 rounded-xl text-slate-400 hover:text-white transition";
-            });
-            document.getElementById(`view-${tab}`).classList.remove('hidden');
-            document.getElementById(`tab-${tab}`).className = "py-2 rounded-xl bg-emerald-600 text-white transition shadow";
-            if (tab === 'analytics') updateAnalyticsChart();
+        /* ---------------- ROSTER MANAGEMENT ---------------- */
+        function loadDefaultPreset() {
+            roster = JSON.parse(JSON.stringify(DEFAULT_ROSTER));
+            saveRosterToStorage();
+            renderRoster();
         }
 
-        function toggleHelpBox() {
-            const drawer = document.getElementById('help-drawer');
-            drawer.classList.toggle('hidden');
+        function saveRosterToStorage() {
+            localStorage.setItem('cricvoice_roster', JSON.stringify(roster));
         }
 
-        function toggleHistoryDrawer() {
-            const drawer = document.getElementById('history-drawer');
-            if (!drawer.classList.contains('hidden')) {
-                drawer.classList.add('hidden');
-            } else {
-                renderMatchHistoryList();
-                drawer.classList.remove('hidden');
+        function loadRosterFromStorage() {
+            const saved = localStorage.getItem('cricvoice_roster');
+            if (saved) {
+                try { roster = JSON.parse(saved); } catch(e) {}
             }
         }
 
-        function renderPlayerMappingRows() {
-            const container = document.getElementById('player-mapping-container');
-            document.getElementById('total-roster-count').innerText = matchSetup.players.length;
-            container.innerHTML = matchSetup.players.map((p, index) => `
-                <div class="flex flex-col gap-1.5 bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <div class="flex gap-2 items-center">
-                        <input type="text" value="${p.name}" placeholder="Player Name" onchange="updatePlayerName(${index}, this.value)" class="flex-1 bg-transparent border-none text-xs text-white focus:outline-none font-bold">
-                        <select onchange="updatePlayerTeam(${index}, this.value)" class="bg-slate-900 text-emerald-400 border border-slate-800 rounded-lg px-2 py-1 text-[11px] focus:outline-none">
-                            <option value="Team A" ${p.team === 'Team A' ? 'selected' : ''}>Team A</option>
-                            <option value="Team B" ${p.team === 'Team B' ? 'selected' : ''}>Team B</option>
-                            <option value="Bench" ${p.team === 'Bench' ? 'selected' : ''}>Bench</option>
-                        </select>
-                        <button onclick="removePlayerRow(${index})" class="text-rose-400 hover:text-rose-300 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+        function renderRoster() {
+            const container = document.getElementById('roster-list-container');
+            container.innerHTML = '';
+
+            roster.forEach((p, idx) => {
+                const row = document.createElement('div');
+                row.className = 'bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2';
+                row.innerHTML = `
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <span class="text-xs font-mono text-slate-500 w-5 text-right">${idx + 1}.</span>
+                        <input type="text" value="${escapeHtml(p.name)}" onchange="updatePlayerName('${p.id}', this.value)"
+                            class="bg-slate-950 border border-slate-800 text-xs font-semibold text-white px-2.5 py-1.5 rounded-lg w-full max-w-xs focus:outline-none focus:border-emerald-500">
                     </div>
-                    <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1 px-1 border-t border-slate-900 gap-1.5">
-                        <div class="flex items-center gap-2">
-                            <label class="flex items-center gap-1 cursor-pointer">
-                                <input type="checkbox" ${p.skills?.P ? 'checked' : ''} onchange="toggleSkill(${index}, 'P', this.checked)" class="rounded bg-slate-900 border-slate-800 text-amber-500 focus:ring-0">
-                                <span class="text-amber-300">💥P</span>
-                            </label>
-                            <label class="flex items-center gap-1 cursor-pointer">
-                                <input type="checkbox" ${p.skills?.F ? 'checked' : ''} onchange="toggleSkill(${index}, 'F', this.checked)" class="rounded bg-slate-900 border-slate-800 text-sky-500 focus:ring-0">
-                                <span class="text-sky-300">⚡F</span>
-                            </label>
-                            <label class="flex items-center gap-1 cursor-pointer">
-                                <input type="checkbox" ${p.skills?.B ? 'checked' : ''} onchange="toggleSkill(${index}, 'B', this.checked)" class="rounded bg-slate-900 border-slate-800 text-emerald-500 focus:ring-0">
-                                <span class="text-emerald-300">🌀B</span>
-                            </label>
-                            <label class="flex items-center gap-1 cursor-pointer">
-                                <input type="checkbox" ${p.skills?.D ? 'checked' : ''} onchange="toggleSkill(${index}, 'D', this.checked)" class="rounded bg-slate-900 border-slate-800 text-indigo-500 focus:ring-0">
-                                <span class="text-indigo-300">🦅D</span>
-                            </label>
-                        </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="toggleSkill('${p.id}', 'P')" class="px-2 py-1 rounded-lg text-xs font-bold border transition ${p.batP ? 'bg-amber-500/20 text-amber-400 border-amber-500/50' : 'bg-slate-950 text-slate-600 border-slate-800'}">💥 P</button>
+                        <button onclick="toggleSkill('${p.id}', 'F')" class="px-2 py-1 rounded-lg text-xs font-bold border transition ${p.bowlF ? 'bg-blue-500/20 text-blue-400 border-blue-500/50' : 'bg-slate-950 text-slate-600 border-slate-800'}">⚡ F</button>
+                        <button onclick="toggleSkill('${p.id}', 'B')" class="px-2 py-1 rounded-lg text-xs font-bold border transition ${p.bowlB ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' : 'bg-slate-950 text-slate-600 border-slate-800'}">🌀 B</button>
+                        <button onclick="toggleSkill('${p.id}', 'D')" class="px-2 py-1 rounded-lg text-xs font-bold border transition ${p.fieldD ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50' : 'bg-slate-950 text-slate-600 border-slate-800'}">🦅 D</button>
+                        <button onclick="deletePlayerRow('${p.id}')" class="text-slate-500 hover:text-rose-400 p-1 text-xs"><i class="fas fa-trash"></i></button>
                     </div>
-                </div>
-            `).join('');
+                `;
+                container.appendChild(row);
+            });
         }
 
         function addPlayerRow() {
-            matchSetup.players.push({ name: "New Player", team: "Team A", skills: { P: false, F: false, B: false, D: false }, isCaptain: false });
-            renderPlayerMappingRows();
+            roster.push({ id: 'p_' + Date.now(), name: `Player ${roster.length + 1}`, batP: false, bowlF: false, bowlB: false, fieldD: false });
+            saveRosterToStorage();
+            renderRoster();
         }
 
-        function removePlayerRow(index) {
-            matchSetup.players.splice(index, 1);
-            renderPlayerMappingRows();
+        function updatePlayerName(id, val) {
+            const p = roster.find(x => x.id === id);
+            if (p) p.name = val;
+            saveRosterToStorage();
         }
 
-        function updatePlayerName(index, val) { matchSetup.players[index].name = val.trim(); }
-        function updatePlayerTeam(index, val) { matchSetup.players[index].team = val; }
-        function toggleSkill(index, skillKey, val) {
-            if (!matchSetup.players[index].skills) matchSetup.players[index].skills = {};
-            if (skillKey === 'F' && val) matchSetup.players[index].skills.B = false;
-            if (skillKey === 'B' && val) matchSetup.players[index].skills.F = false;
-            matchSetup.players[index].skills[skillKey] = val;
-            renderPlayerMappingRows();
+        function toggleSkill(id, skill) {
+            const p = roster.find(x => x.id === id);
+            if (!p) return;
+            if (skill === 'P') p.batP = !p.batP;
+            if (skill === 'D') p.fieldD = !p.fieldD;
+            if (skill === 'F') { p.bowlF = !p.bowlF; if (p.bowlF) p.bowlB = false; }
+            if (skill === 'B') { p.bowlB = !p.bowlB; if (p.bowlB) p.bowlF = false; }
+            saveRosterToStorage();
+            renderRoster();
         }
 
-        function setTeamCaptain(index, targetTeam) {
-            matchSetup.players.forEach((p, i) => {
-                if (p.team === targetTeam) p.isCaptain = (i === index);
-            });
-            renderDragDropBoard();
+        function deletePlayerRow(id) {
+            roster = roster.filter(x => x.id !== id);
+            saveRosterToStorage();
+            renderRoster();
         }
 
-        function calculateFirepower(teamKey) {
-            const players = matchSetup.players.filter(p => p.team === teamKey);
-            if (players.length === 0) return 0;
-            let score = 0;
+        function proceedToAllocation() {
+            balanceTeams();
+            switchTab('allocation');
+        }
+
+        /* ---------------- TEAM ALLOCATION ENGINE ---------------- */
+        function calculateFP(players) {
+            let fp = 0;
             players.forEach(p => {
-                if (p.skills?.P) score += 15;
-                if (p.skills?.F) score += 12;
-                if (p.skills?.B) score += 10;
-                if (p.skills?.D) score += 8;
+                if (p.batP) fp += 3;
+                if (p.bowlF) fp += 3;
+                if (p.bowlB) fp += 2;
+                if (p.fieldD) fp += 1.5;
             });
-            return Math.min(100, Math.round((score / (players.length * 25)) * 100));
+            return parseFloat(fp.toFixed(1));
         }
 
-        // Multi-Pass Balanced Rehash Engine
-        function autoBalanceTeams() {
-            const activePlayers = matchSetup.players.filter(p => p.team !== 'Bench');
-            
-            // Randomize slightly on each rehash click for fresh distribution
-            activePlayers.sort(() => Math.random() - 0.5);
+        function balanceTeams() {
+            let bestA = [], bestB = [], minDiff = Infinity;
+            for (let i = 0; i < 200; i++) {
+                let shuffled = [...roster].sort(() => Math.random() - 0.5);
+                let candA = [], candB = [];
+                shuffled.forEach((p, idx) => (idx % 2 === 0 ? candA : candB).push(p));
 
-            // Categorize by skill profiles to ensure equal distribution
-            const powerBowlers = activePlayers.filter(p => p.skills?.P && (p.skills?.F || p.skills?.B));
-            const powerOnly = activePlayers.filter(p => p.skills?.P && !(p.skills?.F || p.skills?.B));
-            const bowlOnly = activePlayers.filter(p => !p.skills?.P && (p.skills?.F || p.skills?.B));
-            const others = activePlayers.filter(p => !p.skills?.P && !(p.skills?.F || p.skills?.B));
-
-            let teamA = [];
-            let teamB = [];
-
-            const distributeGroup = (group) => {
-                group.forEach(p => {
-                    const countA = teamA.length;
-                    const countB = teamB.length;
-                    if (countA < countB) {
-                        teamA.push(p);
-                    } else if (countB < countA) {
-                        teamB.push(p);
-                    } else {
-                        // Tie breaker: balance deep fielders or alternate
-                        const deepA = teamA.filter(x => x.skills?.D).length;
-                        const deepB = teamB.filter(x => x.skills?.D).length;
-                        if (deepA <= deepB) teamA.push(p);
-                        else teamB.push(p);
-                    }
-                });
-            };
-
-            distributeGroup(powerBowlers);
-            distributeGroup(powerOnly);
-            distributeGroup(bowlOnly);
-            distributeGroup(others);
-
-            matchSetup.players.forEach(p => {
-                if (p.team === 'Bench') return;
-                if (teamA.includes(p)) p.team = 'Team A';
-                else if (teamB.includes(p)) p.team = 'Team B';
-            });
-
-            renderDragDropBoard();
-        }
-
-        function showTeamPreview() {
-            matchSetup.date = document.getElementById('setup-date').value;
-            matchSetup.matchNum = document.getElementById('setup-match-num').value || "Match 1";
-            matchSetup.teamA = document.getElementById('setup-team-a').value || "Team A";
-            matchSetup.teamB = document.getElementById('setup-team-b').value || "Team B";
-
-            document.getElementById('preview-team-a-title').innerText = matchSetup.teamA;
-            document.getElementById('preview-team-b-title').innerText = matchSetup.teamB;
-
-            renderDragDropBoard();
-            document.getElementById('setup-step-1').classList.add('hidden');
-            document.getElementById('setup-step-2').classList.remove('hidden');
-        }
-
-        function renderDragDropBoard() {
-            ['Team A', 'Team B'].forEach(cat => {
-                const zone = document.getElementById(`dropzone-${cat}`);
-                const players = matchSetup.players.filter(p => p.team === cat);
-
-                const powerCount = players.filter(p => p.skills?.P).length;
-                const fastCount = players.filter(p => p.skills?.F).length;
-                const totalBowlers = players.filter(p => p.skills?.F || p.skills?.B).length;
-                const deepCount = players.filter(p => p.skills?.D).length;
-                const firepower = calculateFirepower(cat);
-                const cap = players.find(p => p.isCaptain);
-
-                if (cat === 'Team A') {
-                    document.getElementById('count-a-players').innerText = players.length;
-                    document.getElementById('count-a-power').innerText = powerCount;
-                    document.getElementById('count-a-fast').innerText = fastCount;
-                    document.getElementById('count-a-bowlers').innerText = totalBowlers;
-                    document.getElementById('count-a-deep').innerText = deepCount;
-                    document.getElementById('firepower-a').innerText = firepower;
-                    document.getElementById('captain-a-name').innerText = cap ? cap.name : 'None';
-                } else {
-                    document.getElementById('count-b-players').innerText = players.length;
-                    document.getElementById('count-b-power').innerText = powerCount;
-                    document.getElementById('count-b-fast').innerText = fastCount;
-                    document.getElementById('count-b-bowlers').innerText = totalBowlers;
-                    document.getElementById('count-b-deep').innerText = deepCount;
-                    document.getElementById('firepower-b').innerText = firepower;
-                    document.getElementById('captain-b-name').innerText = cap ? cap.name : 'None';
+                let fpA = calculateFP(candA), fpB = calculateFP(candB);
+                let diff = Math.abs(fpA - fpB);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    bestA = candA;
+                    bestB = candB;
                 }
-
-                if (players.length === 0) {
-                    zone.innerHTML = `<span class="text-[10px] text-slate-600 italic p-2 text-center">No players</span>`;
-                    return;
-                }
-
-                zone.innerHTML = players.map(p => {
-                    const originalIndex = matchSetup.players.indexOf(p);
-                    return `
-                        <div draggable="true" ondragstart="handleDragStart(event, ${originalIndex})" class="bg-slate-900 border border-slate-800 p-2 rounded-xl flex justify-between items-center text-xs">
-                            <div class="flex flex-col gap-0.5 overflow-hidden">
-                                <div class="flex items-center gap-1">
-                                    <span class="font-bold text-slate-200 truncate">${p.name}</span>
-                                    ${p.isCaptain ? '<span class="text-[9px] text-amber-400 font-bold">👑</span>' : ''}
-                                </div>
-                                <div class="flex gap-1 text-[9px]">
-                                    ${p.skills?.P ? '<span class="text-amber-300">💥P</span>' : ''}
-                                    ${p.skills?.F ? '<span class="text-sky-300">⚡F</span>' : (p.skills?.B ? '<span class="text-emerald-300">🌀B</span>' : '')}
-                                    ${p.skills?.D ? '<span class="text-indigo-300">🦅D</span>' : ''}
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-1 shrink-0">
-                                <button onclick="setTeamCaptain(${originalIndex}, '${cat}')" title="Captain" class="text-[9px] ${p.isCaptain ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400'} px-1.5 py-0.5 rounded font-bold">👑</button>
-                                <button onclick="quickMovePlayer(${originalIndex}, '${cat === 'Team A' ? 'Team B' : 'Team A'}')" class="text-[9px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-bold">⇄</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            });
-        }
-
-        function handleDragStart(e, index) { draggedPlayerIndex = index; e.dataTransfer.setData('text/plain', index); }
-        function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
-        function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
-        function handleDrop(e, targetTeam) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-over');
-            if (draggedPlayerIndex !== null) {
-                matchSetup.players[draggedPlayerIndex].team = targetTeam;
-                renderDragDropBoard();
-                draggedPlayerIndex = null;
             }
+            teamA = bestA;
+            teamB = bestB;
+            if (!captainA && teamA.length > 0) captainA = teamA[0].id;
+            if (!captainB && teamB.length > 0) captainB = teamB[0].id;
+
+            renderAllocationView();
         }
-        function quickMovePlayer(index, targetTeam) { matchSetup.players[index].team = targetTeam; renderDragDropBoard(); }
-        function backToRosterInput() { document.getElementById('setup-step-2').classList.add('hidden'); document.getElementById('setup-step-1').classList.remove('hidden'); }
 
-        function confirmAndStartMatch() {
-            matchState.battersList = {};
-            matchState.bowlersList = {};
-            matchState.fieldersList = {};
+        function renderAllocationView() {
+            document.getElementById('teamA-cnt').innerText = teamA.length;
+            document.getElementById('teamA-p').innerText = teamA.filter(p => p.batP).length;
+            document.getElementById('teamA-f').innerText = teamA.filter(p => p.bowlF).length;
+            document.getElementById('teamA-b').innerText = teamA.filter(p => p.bowlB).length;
+            document.getElementById('teamA-d').innerText = teamA.filter(p => p.fieldD).length;
+            document.getElementById('teamA-fp').innerText = `FP: ${calculateFP(teamA)}`;
 
-            matchSetup.players.forEach(p => {
-                if (p.team === 'Team A') {
-                    matchState.battersList[p.name] = { runs: 0, balls: 0, fours: 0, sixes: 0, status: 'Yet to Bat', dismissal: '' };
-                } else if (p.team === 'Team B') {
-                    matchState.bowlersList[p.name] = { legalBalls: 0, runs: 0, wickets: 0 };
-                }
-                if (p.team !== 'Bench') {
-                    matchState.fieldersList[p.name] = { catches: 0, runouts: 0 };
-                }
+            document.getElementById('teamB-cnt').innerText = teamB.length;
+            document.getElementById('teamB-p').innerText = teamB.filter(p => p.batP).length;
+            document.getElementById('teamB-f').innerText = teamB.filter(p => p.bowlF).length;
+            document.getElementById('teamB-b').innerText = teamB.filter(p => p.bowlB).length;
+            document.getElementById('teamB-d').innerText = teamB.filter(p => p.fieldD).length;
+            document.getElementById('teamB-fp').innerText = `FP: ${calculateFP(teamB)}`;
+
+            const capAObj = teamA.find(p => p.id === captainA);
+            const capBObj = teamB.find(p => p.id === captainB);
+            document.getElementById('teamA-cap').innerText = capAObj ? capAObj.name : 'None';
+            document.getElementById('teamB-cap').innerText = capBObj ? capBObj.name : 'None';
+
+            const containerA = document.getElementById('teamA-list-container');
+            const containerB = document.getElementById('teamB-list-container');
+            containerA.innerHTML = '';
+            containerB.innerHTML = '';
+
+            teamA.forEach(p => containerA.appendChild(createTeamPlayerCard(p, 'A')));
+            teamB.forEach(p => containerB.appendChild(createTeamPlayerCard(p, 'B')));
+        }
+
+        function createTeamPlayerCard(p, teamKey) {
+            const card = document.createElement('div');
+            const isCap = (teamKey === 'A' && captainA === p.id) || (teamKey === 'B' && captainB === p.id);
+            card.className = `bg-slate-950 p-2 rounded-xl border ${isCap ? 'border-yellow-500/60 bg-yellow-950/20' : 'border-slate-800'} flex items-center justify-between text-xs`;
+            card.innerHTML = `
+                <div class="flex items-center gap-1.5">
+                    <button onclick="setCaptain('${teamKey}', '${p.id}')" title="Set Captain" class="text-slate-600 hover:text-yellow-400 transition ${isCap ? 'text-yellow-400' : ''}">
+                        👑
+                    </button>
+                    <span class="font-bold text-slate-200">${escapeHtml(p.name)}</span>
+                </div>
+                <div class="flex items-center gap-1 text-[10px]">
+                    ${p.batP ? '<span class="text-amber-400 font-bold">💥</span>' : ''}
+                    ${p.bowlF ? '<span class="text-blue-400 font-bold">⚡</span>' : ''}
+                    ${p.bowlB ? '<span class="text-purple-400 font-bold">🌀</span>' : ''}
+                    ${p.fieldD ? '<span class="text-emerald-400 font-bold">🦅</span>' : ''}
+                </div>
+            `;
+            return card;
+        }
+
+        function setCaptain(teamKey, pid) {
+            if (teamKey === 'A') captainA = pid;
+            if (teamKey === 'B') captainB = pid;
+            renderAllocationView();
+        }
+
+        /* ---------------- LIVE MATCH ENGINE ---------------- */
+        function startMatch() {
+            // Reset state
+            gameState = { runs: 0, wickets: 0, balls: 0, overs: 0, striker: '', nonStriker: '', bowler: '', recentBalls: [] };
+            playerStats = {};
+
+            [...teamA, ...teamB].forEach(p => {
+                playerStats[p.name] = {
+                    name: p.name,
+                    runs: 0, balls: 0,
+                    runsList: [0,0,0,0,0,0,0], // 0s, 1s, 2s, 3s, 4s, 5s, 6s
+                    ballsBowled: 0, dotBalls: 0, runsConceded: 0, wickets: 0,
+                    bowlerRunList: [0,0,0,0,0,0,0],
+                    catches: 0, runouts: 0, stumpings: 0
+                };
             });
 
-            const teamABatters = matchSetup.players.filter(p => p.team === 'Team A');
-            const teamBBowlers = matchSetup.players.filter(p => p.team === 'Team B' && (p.skills?.B || p.skills?.F));
+            if (teamA.length > 0) gameState.striker = teamA[0].name;
+            if (teamA.length > 1) gameState.nonStriker = teamA[1].name;
+            if (teamB.length > 0) gameState.bowler = teamB[0].name;
 
-            if (teamABatters.length > 0) {
-                matchState.striker.name = teamABatters[0].name;
-                matchState.battersList[teamABatters[0].name].status = 'Batting';
-            }
-            if (teamBBowlers.length > 0) matchState.bowler.name = teamBBowlers[0].name;
-
-            renderSquadChips();
-            updateUI();
+            updateLiveUI();
             switchTab('live');
         }
 
-        function renderSquadChips() {
-            const container = document.getElementById('squad-quick-chips');
-            const activePlayers = matchSetup.players.filter(p => p.team !== 'Bench');
-            container.innerHTML = activePlayers.map(p => `
-                <button onclick="${p.team === 'Team A' ? `setStriker('${p.name}')` : `setBowler('${p.name}')`}" class="bg-slate-800 hover:bg-slate-700 ${p.team === 'Team A' ? 'text-emerald-300' : 'text-amber-300'} border border-slate-700 px-2.5 py-1 rounded-full text-xs shrink-0 flex items-center gap-1">
-                    <span>${p.name}</span>
-                    ${p.isCaptain ? '👑' : ''}
-                </button>
-            `).join('');
-        }
+        function updateLiveUI() {
+            document.getElementById('live-score').innerText = `${gameState.runs} / ${gameState.wickets}`;
+            document.getElementById('live-overs').innerText = `${gameState.overs}.${gameState.balls} Overs`;
 
-        function findClosestPlayerName(spokenName) {
-            const activePlayers = matchSetup.players.filter(p => p.team !== 'Bench').map(p => p.name);
-            if (!spokenName || activePlayers.length === 0) return spokenName;
+            const totalOvers = gameState.overs + (gameState.balls / 6);
+            document.getElementById('live-crr').innerText = totalOvers > 0 ? (gameState.runs / totalOvers).toFixed(2) : '0.00';
 
-            const levenshtein = (a, b) => {
-                const matrix = [];
-                for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-                for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-                for (let i = 1; i <= b.length; i++) {
-                    for (let j = 1; j <= a.length; j++) {
-                        if (b.charAt(i - 1).toLowerCase() === a.charAt(j - 1).toLowerCase()) {
-                            matrix[i][j] = matrix[i - 1][j - 1];
-                        } else {
-                            matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
-                        }
-                    }
-                }
-                return matrix[b.length][a.length];
-            };
+            // Populate Batsmen Dropdowns
+            const strikerSel = document.getElementById('striker-select');
+            const nonStrikerSel = document.getElementById('nonstriker-select');
+            const bowlerSel = document.getElementById('bowler-select');
 
-            let closestName = spokenName;
-            let minDistance = Infinity;
-            activePlayers.forEach(pName => {
-                const dist = levenshtein(spokenName, pName);
-                if (dist < minDistance) { minDistance = dist; closestName = pName; }
+            strikerSel.innerHTML = '';
+            nonStrikerSel.innerHTML = '';
+            bowlerSel.innerHTML = '';
+
+            teamA.forEach(p => {
+                strikerSel.innerHTML += `<option value="${p.name}" ${p.name === gameState.striker ? 'selected' : ''}>${p.name}</option>`;
+                nonStrikerSel.innerHTML += `<option value="${p.name}" ${p.name === gameState.nonStriker ? 'selected' : ''}>${p.name}</option>`;
             });
-            return minDistance <= 3 ? closestName : spokenName;
+
+            teamB.forEach(p => {
+                bowlerSel.innerHTML += `<option value="${p.name}" ${p.name === gameState.bowler ? 'selected' : ''}>${p.name}</option>`;
+            });
+
+            // Display Striker and Non-Striker Stats
+            const sStats = playerStats[gameState.striker] || { runs: 0, balls: 0 };
+            const nsStats = playerStats[gameState.nonStriker] || { runs: 0, balls: 0 };
+            document.getElementById('striker-stats').innerText = `${sStats.runs} (${sStats.balls})`;
+            document.getElementById('nonstriker-stats').innerText = `${nsStats.runs} (${nsStats.balls})`;
+
+            // Display Bowler Stats
+            const bStats = playerStats[gameState.bowler] || { wickets: 0, runsConceded: 0, ballsBowled: 0 };
+            const bOvers = Math.floor(bStats.ballsBowled / 6) + '.' + (bStats.ballsBowled % 6);
+            document.getElementById('bowler-stats').innerText = `${bStats.wickets}-${bStats.runsConceded} (${bOvers})`;
+
+            // Render Recent Timeline
+            const recentContainer = document.getElementById('recent-balls');
+            recentContainer.innerHTML = '';
+            gameState.recentBalls.slice(-6).forEach(b => {
+                const badge = document.createElement('span');
+                badge.className = `w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${b.wicket ? 'bg-red-500 text-white' : b.runs === 4 ? 'bg-amber-500 text-slate-950' : b.runs === 6 ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-300'}`;
+                badge.innerText = b.wicket ? 'W' : b.runs;
+                recentContainer.appendChild(badge);
+            });
         }
 
-        function setStriker(name) {
-            const matchedName = findClosestPlayerName(name);
-            matchState.striker.name = matchedName;
-            if (!matchState.battersList[matchedName]) {
-                matchState.battersList[matchedName] = { runs: 0, balls: 0, fours: 0, sixes: 0, status: 'Batting', dismissal: '' };
-            } else {
-                matchState.battersList[matchedName].status = 'Batting';
-            }
-            updateUI();
+        function changeStriker(val) { gameState.striker = val; updateLiveUI(); }
+        function changeNonStriker(val) { gameState.nonStriker = val; updateLiveUI(); }
+        function changeBowler(val) { gameState.bowler = val; updateLiveUI(); }
+
+        function triggerQuickBall(runs) { stageBall({ runs, extra: 'NONE', isWicket: false }); }
+        function triggerQuickExtra(extra) { stageBall({ runs: 1, extra, isWicket: false }); }
+        function triggerQuickWicket() { stageBall({ runs: 0, extra: 'NONE', isWicket: true }); }
+
+        function stageBall(params) {
+            pendingBall = params;
+            document.getElementById('modal-runs').value = params.runs;
+            document.getElementById('modal-extra').value = params.extra;
+            document.getElementById('modal-is-wicket').checked = params.isWicket;
+            populateFielderOptions();
+            toggleWicketFielderOption();
+            document.getElementById('confirmation-modal').classList.remove('hidden');
         }
 
-        function setBowler(name) {
-            const matchedName = findClosestPlayerName(name);
-            matchState.bowler.name = matchedName;
-            if (!matchState.bowlersList[matchedName]) {
-                matchState.bowlersList[matchedName] = { legalBalls: 0, runs: 0, wickets: 0 };
-            }
-            updateUI();
+        function closeConfirmationModal() {
+            document.getElementById('confirmation-modal').classList.add('hidden');
+            pendingBall = null;
         }
 
-        function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return;
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('transcript-display').innerText = `"${transcript}"`;
-                processCommentary(transcript);
-            };
-            recognition.onerror = function() { stopListening(); };
-            recognition.onend = function() { stopListening(); };
+        function toggleWicketFielderOption() {
+            const isW = document.getElementById('modal-is-wicket').checked;
+            document.getElementById('modal-fielder-box').classList.toggle('hidden', !isW);
         }
 
-        function toggleListening() {
-            if (!recognition) return alert('Speech recognition not supported in browser.');
-            if (isListening) {
-                recognition.stop();
-            } else {
-                recognition.start();
-                isListening = true;
-                document.getElementById('mic-btn').classList.add('listening-active', 'bg-rose-600');
-                document.getElementById('mic-btn').classList.remove('bg-emerald-600');
-                document.getElementById('mic-icon').className = "fa-solid fa-stop";
-                document.getElementById('mic-status').innerText = "Listening...";
-            }
+        function populateFielderOptions() {
+            const sel = document.getElementById('modal-fielder');
+            sel.innerHTML = '<option value="">None / Unassisted</option>';
+            teamB.forEach(p => {
+                sel.innerHTML += `<option value="${p.name}">${p.name}</option>`;
+            });
         }
 
-        function stopListening() {
-            isListening = false;
-            document.getElementById('mic-btn').classList.remove('listening-active', 'bg-rose-600');
-            document.getElementById('mic-btn').classList.add('bg-emerald-600');
-            document.getElementById('mic-icon').className = "fa-solid fa-microphone";
-            document.getElementById('mic-status').innerText = "Ready";
-        }
+        function commitStagedBall() {
+            if (!pendingBall) return;
 
-        function simulateCommentary(text) {
-            document.getElementById('transcript-display').innerText = `"${text}"`;
-            processCommentary(text);
-        }
+            // Push state snapshot for undo
+            historyStack.push(JSON.parse(JSON.stringify({ gameState, playerStats })));
 
-        function processCommentary(text) {
-            const lower = text.toLowerCase();
-            let parsed = { runs: 0, isLegal: true, isWicket: false, extraType: null, fielder: '' };
-            let nameAssigned = false;
+            const runs = parseInt(document.getElementById('modal-runs').value, 10);
+            const extra = document.getElementById('modal-extra').value;
+            const isWicket = document.getElementById('modal-is-wicket').checked;
+            const fielder = document.getElementById('modal-fielder').value;
 
-            if (lower.includes('is batting') || lower.includes('comes to bat') || lower.includes('on strike') || lower.includes('batsman')) {
-                const match = text.match(/([a-zA-Z\s]+)\s+(?:is batting|comes to bat|on strike|is the batsman|batsman)/i);
-                if (match && match[1]) { setStriker(match[1].trim()); nameAssigned = true; }
-            }
+            const striker = playerStats[gameState.striker];
+            const bowler = playerStats[gameState.bowler];
 
-            if (lower.includes('is bowling') || lower.includes('bowling') || lower.includes('bowler')) {
-                const match = text.match(/([a-zA-Z\s]+)\s+(?:is bowling|bowling|is the bowler|bowler)/i);
-                if (match && match[1]) { setBowler(match[1].trim()); nameAssigned = true; }
-            }
-
-            if (nameAssigned && !lower.includes('run') && !lower.includes('four') && !lower.includes('six') && !lower.includes('dot') && !lower.includes('wide') && !lower.includes('wicket')) {
-                return;
-            }
-
-            if (lower.includes('six') || lower.includes('6 runs')) { parsed.runs = 6; }
-            else if (lower.includes('four') || lower.includes('4 runs')) { parsed.runs = 4; }
-            else if (lower.includes('single') || lower.includes('one run')) { parsed.runs = 1; }
-            else if (lower.includes('two') || lower.includes('2 runs')) { parsed.runs = 2; }
-            else if (lower.includes('three') || lower.includes('3 runs')) { parsed.runs = 3; }
-            else if (lower.includes('wide')) { parsed.extraType = 'wide'; parsed.isLegal = false; }
-            else if (lower.includes('wicket') || lower.includes('bowled') || lower.includes('caught')) { 
-                parsed.isWicket = true; 
-                const caughtMatch = text.match(/caught by\s+([a-zA-Z\s]+)/i);
-                if (caughtMatch && caughtMatch[1]) parsed.fielder = findClosestPlayerName(caughtMatch[1].trim());
-            }
-            else if (lower.includes('dot') || lower.includes('no run')) { parsed.runs = 0; }
-
-            if (matchSetup.requireConfirmation) {
-                pendingParsedBall = parsed;
-                document.getElementById('modal-speech-transcript').innerText = `"${text}"`;
-                document.getElementById('modal-runs-select').value = parsed.runs;
-                document.getElementById('modal-extra-select').value = parsed.isWicket ? 'wicket' : (parsed.extraType === 'wide' ? 'wide' : 'none');
-                document.getElementById('modal-fielder-input').value = parsed.fielder || '';
-                document.getElementById('confirm-modal').classList.remove('hidden');
-            } else {
-                commitBall(parsed);
-            }
-        }
-
-        function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); pendingParsedBall = null; }
-
-        function commitModalBall() {
-            if (!pendingParsedBall) return;
-            const runs = parseInt(document.getElementById('modal-runs-select').value);
-            const extra = document.getElementById('modal-extra-select').value;
-            const fielder = document.getElementById('modal-fielder-input').value.trim();
-
-            pendingParsedBall.runs = runs;
-            pendingParsedBall.isWicket = (extra === 'wicket');
-            pendingParsedBall.extraType = (extra === 'wide') ? 'wide' : null;
-            pendingParsedBall.isLegal = (extra !== 'wide');
-            pendingParsedBall.fielder = fielder ? findClosestPlayerName(fielder) : '';
-
-            commitBall(pendingParsedBall);
-            closeConfirmModal();
-        }
-
-        function commitBall(parsed) {
-            undoStack.push(JSON.parse(JSON.stringify(matchState)));
-
-            if (parsed.runs === 6) {
-                matchState.striker.sixes++;
-                confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
-            } else if (parsed.runs === 4) {
-                matchState.striker.fours++;
-                confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-            }
-
-            if (parsed.extraType === 'wide') {
-                matchState.extras++;
-                matchState.runs += 1;
-                matchState.bowler.runsConceded += 1;
-            } else if (parsed.isWicket) {
-                matchState.wickets++;
-                matchState.bowler.wickets++;
-                
-                const dismissalText = parsed.fielder ? `c ${parsed.fielder} b ${matchState.bowler.name}` : `b ${matchState.bowler.name}`;
-                if (matchState.battersList[matchState.striker.name]) {
-                    matchState.battersList[matchState.striker.name].status = 'Out';
-                    matchState.battersList[matchState.striker.name].dismissal = dismissalText;
+            // Update Striker
+            if (extra === 'NONE') {
+                if (striker) {
+                    striker.runs += runs;
+                    striker.balls += 1;
+                    if (runs <= 6) striker.runsList[runs] += 1;
                 }
+                gameState.balls += 1;
+            }
 
-                if (parsed.fielder && matchState.fieldersList[parsed.fielder]) {
-                    matchState.fieldersList[parsed.fielder].catches++;
+            // Update Bowler
+            if (bowler) {
+                bowler.runsConceded += runs;
+                if (extra === 'NONE') {
+                    bowler.ballsBowled += 1;
+                    if (runs === 0) bowler.dotBalls += 1;
+                    if (runs <= 6) bowler.bowlerRunList[runs] += 1;
                 }
-
-                confetti({ particleCount: 100, spread: 100, origin: { y: 0.5 }, colors: ['#f43f5e', '#10b981'] });
             }
 
-            matchState.striker.runs += parsed.runs;
-            matchState.bowler.runsConceded += parsed.runs;
-            matchState.runs += parsed.runs;
+            gameState.runs += runs;
 
-            if (parsed.isLegal) {
-                matchState.balls++;
-                matchState.striker.balls++;
-                matchState.bowler.legalBallsBowled++;
+            if (isWicket) {
+                gameState.wickets += 1;
+                if (bowler) bowler.wickets += 1;
+                if (fielder && playerStats[fielder]) playerStats[fielder].catches += 1;
             }
 
-            matchState.battersList[matchState.striker.name].runs = matchState.striker.runs;
-            matchState.battersList[matchState.striker.name].balls = matchState.striker.balls;
-            matchState.battersList[matchState.striker.name].fours = matchState.striker.fours;
-            matchState.battersList[matchState.striker.name].sixes = matchState.striker.sixes;
+            if (gameState.balls >= 6) {
+                gameState.overs += 1;
+                gameState.balls = 0;
+            }
 
-            matchState.bowlersList[matchState.bowler.name] = {
-                legalBalls: matchState.bowler.legalBallsBowled,
-                runs: matchState.bowler.runsConceded,
-                wickets: matchState.bowler.wickets
-            };
+            if (runs === 6) confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
 
-            matchState.timeline.unshift(parsed.isWicket ? 'W' : (parsed.extraType ? 'Wd' : parsed.runs));
-            if (matchState.timeline.length > 15) matchState.timeline.pop();
-
-            updateUI();
+            gameState.recentBalls.push({ runs, wicket: isWicket });
+            closeConfirmationModal();
+            updateLiveUI();
         }
 
         function undoLastBall() {
-            if (undoStack.length === 0) return alert('No previous actions to undo!');
-            matchState = undoStack.pop();
-            updateUI();
+            if (historyStack.length === 0) return;
+            const prev = historyStack.pop();
+            gameState = prev.gameState;
+            playerStats = prev.playerStats;
+            updateLiveUI();
         }
 
-        function updateUI() {
-            document.getElementById('undo-badge').innerText = undoStack.length;
-            document.getElementById('match-header-info').innerText = `${matchSetup.matchNum} • ${matchSetup.date}`;
-            document.getElementById('live-match-title').innerText = `${matchSetup.teamA} vs ${matchSetup.teamB}`;
-            document.getElementById('scorecard-batting-team-title').innerText = matchSetup.teamA;
-            document.getElementById('scorecard-bowling-team-title').innerText = matchSetup.teamB;
-
-            document.getElementById('total-score').innerText = `${matchState.runs}/${matchState.wickets}`;
-            const overs = Math.floor(matchState.balls / 6) + '.' + (matchState.balls % 6);
-            document.getElementById('total-overs').innerText = overs;
-
-            const oversDecimal = matchState.balls / 6;
-            const rr = oversDecimal > 0 ? (matchState.runs / oversDecimal).toFixed(2) : '0.00';
-            document.getElementById('match-run-rate').innerText = `RR: ${rr}`;
-
-            document.getElementById('striker-name').innerText = matchState.striker.name + '*';
-            document.getElementById('striker-runs').innerText = matchState.striker.runs;
-            document.getElementById('striker-balls').innerText = matchState.striker.balls;
-            const sr = matchState.striker.balls > 0 ? ((matchState.striker.runs / matchState.striker.balls) * 100).toFixed(1) : '0.0';
-            document.getElementById('striker-sr').innerText = `SR: ${sr}`;
-
-            document.getElementById('bowler-name').innerText = matchState.bowler.name;
-            document.getElementById('bowler-wickets').innerText = matchState.bowler.wickets;
-            document.getElementById('bowler-runs-conceded').innerText = matchState.bowler.runsConceded;
-            const bOvers = Math.floor(matchState.bowler.legalBallsBowled / 6) + '.' + (matchState.bowler.legalBallsBowled % 6);
-            document.getElementById('bowler-overs').innerText = bOvers;
-            const bEcon = oversDecimal > 0 ? (matchState.bowler.runsConceded / (matchState.bowler.legalBallsBowled / 6)).toFixed(1) : '0.0';
-            document.getElementById('bowler-econ').innerText = `Eco: ${bEcon}`;
-
-            const feed = document.getElementById('ball-feed');
-            if (matchState.timeline.length === 0) {
-                feed.innerHTML = `<span class="text-xs text-slate-500 italic py-1">No balls bowled yet.</span>`;
-            } else {
-                feed.innerHTML = matchState.timeline.map(b => `
-                    <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${b === 'W' ? 'bg-rose-600 text-white' : b === 4 ? 'bg-emerald-600 text-white' : b === 6 ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-300'}">
-                        ${b}
-                    </div>
-                `).join('');
-            }
-
-            updateScorecardTables();
-            updateAnalyticsChart();
+        function swapStrike() {
+            const temp = gameState.striker;
+            gameState.striker = gameState.nonStriker;
+            gameState.nonStriker = temp;
+            updateLiveUI();
         }
 
-        function updateScorecardTables() {
-            const batBody = document.getElementById('batting-table-body');
-            batBody.innerHTML = Object.entries(matchState.battersList).map(([name, data]) => {
-                const sr = data.balls > 0 ? ((data.runs / data.balls) * 100).toFixed(1) : '0.0';
-                let statusHtml = `<span class="text-slate-500 italic">Yet to bat</span>`;
-                if (data.status === 'Batting') statusHtml = `<span class="text-emerald-400 font-bold">Batting *</span>`;
-                else if (data.status === 'Out') statusHtml = `<span class="text-rose-400 font-medium">${data.dismissal}</span>`;
-
-                return `<tr class="border-b border-slate-900/50">
-                    <td class="py-2 font-bold text-slate-200">${name}</td>
-                    <td class="py-2 text-[11px]">${statusHtml}</td>
-                    <td class="py-2 text-center font-bold text-white">${data.runs}</td>
-                    <td class="py-2 text-center text-slate-400">${data.balls}</td>
-                    <td class="py-2 text-center text-slate-400">${data.fours}</td>
-                    <td class="py-2 text-right text-slate-400">${sr}</td>
-                </tr>`;
-            }).join('');
-
-            const bowlBody = document.getElementById('bowling-table-body');
-            bowlBody.innerHTML = Object.entries(matchState.bowlersList).map(([name, data]) => {
-                const o = Math.floor(data.legalBalls / 6) + '.' + (data.legalBalls % 6);
-                const eco = data.legalBalls > 0 ? (data.runs / (data.legalBalls / 6)).toFixed(1) : '0.0';
-                return `<tr class="border-b border-slate-900/50">
-                    <td class="py-2 font-bold text-slate-200">${name}</td>
-                    <td class="py-2 text-center text-slate-400">${o}</td>
-                    <td class="py-2 text-center font-bold text-white">${data.runs}</td>
-                    <td class="py-2 text-center text-emerald-400 font-bold">${data.wickets}</td>
-                    <td class="py-2 text-right text-slate-400">${eco}</td>
-                </tr>`;
-            }).join('');
+        /* ---------------- SPEECH RECOGNITION ENGINE ---------------- */
+        function initSpeechRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            speechRecognition = new SR();
+            speechRecognition.continuous = false;
+            speechRecognition.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                document.getElementById('voice-transcript').innerText = `"${text}"`;
+                processVoiceCommand(text);
+            };
         }
 
-        function switchAnalyticsSubTab(sub) {
-            currentAnalyticsSubTab = sub;
-            ['batters', 'bowlers', 'fielders'].forEach(s => {
-                document.getElementById(`subtab-${s}`).className = (s === sub) ? "py-2 rounded-xl bg-emerald-600 text-white transition" : "py-2 rounded-xl text-slate-400 hover:text-white transition";
+        function toggleListening() {
+            if (!speechRecognition) return;
+            speechRecognition.start();
+        }
+
+        function testVoiceCommand(cmd) {
+            toggleVoiceHelpDrawer();
+            document.getElementById('voice-transcript').innerText = `"${cmd}"`;
+            processVoiceCommand(cmd);
+        }
+
+        function processVoiceCommand(text) {
+            const lower = text.toLowerCase();
+            if (lower.includes('four') || lower.includes('boundary')) triggerQuickBall(4);
+            else if (lower.includes('six') || lower.includes('maximum')) triggerQuickBall(6);
+            else if (lower.includes('single') || lower.includes('one')) triggerQuickBall(1);
+            else if (lower.includes('two') || lower.includes('double')) triggerQuickBall(2);
+            else if (lower.includes('three')) triggerQuickBall(3);
+            else if (lower.includes('dot') || lower.includes('zero')) triggerQuickBall(0);
+            else if (lower.includes('wide')) triggerQuickExtra('WD');
+            else if (lower.includes('no ball')) triggerQuickExtra('NB');
+            else if (lower.includes('out') || lower.includes('wicket')) triggerQuickWicket();
+        }
+
+        /* ---------------- ANALYTICS & CHARTS ---------------- */
+        function switchAnalyticsSubTab(tab) {
+            ['batsmen', 'bowlers', 'fielders'].forEach(t => {
+                document.getElementById(`analytics-${t}`).classList.add('hidden');
+                document.getElementById(`subtab-btn-${t}`).className = 'subtab-btn flex-1 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition';
             });
-            updateAnalyticsChart();
+
+            document.getElementById(`analytics-${tab}`).classList.remove('hidden');
+            document.getElementById(`subtab-btn-${tab}`).className = 'subtab-btn flex-1 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 text-white transition';
+
+            renderAnalyticsData();
         }
 
-        function initAnalyticsChart() {
-            const ctx = document.getElementById('analyticsChart').getContext('2d');
-            analyticsChart = new Chart(ctx, {
+        function renderAnalyticsData() {
+            const stats = Object.values(playerStats);
+
+            // Render Batsmen Table
+            const batBody = document.getElementById('batsmen-table-body');
+            batBody.innerHTML = '';
+            stats.forEach(s => {
+                const sr = s.balls > 0 ? ((s.runs / s.balls) * 100).toFixed(1) : '0.0';
+                batBody.innerHTML += `
+                    <tr>
+                        <td class="p-2 font-bold text-white">${escapeHtml(s.name)}</td>
+                        <td class="p-2 text-right text-emerald-400 font-bold">${s.runs}</td>
+                        <td class="p-2 text-right text-slate-300">${s.balls}</td>
+                        <td class="p-2 text-center font-mono text-slate-400 text-[11px]">${s.runsList.join('/')}</td>
+                        <td class="p-2 text-right font-mono text-cyan-300">${sr}</td>
+                    </tr>
+                `;
+            });
+
+            // Render Bowlers Table
+            const bowlBody = document.getElementById('bowlers-table-body');
+            bowlBody.innerHTML = '';
+            stats.forEach(s => {
+                const overs = Math.floor(s.ballsBowled / 6) + (s.ballsBowled % 6) / 10;
+                const econ = overs > 0 ? (s.runsConceded / overs).toFixed(2) : '0.00';
+                const sr = s.wickets > 0 ? (s.ballsBowled / s.wickets).toFixed(1) : '0.0';
+                bowlBody.innerHTML += `
+                    <tr>
+                        <td class="p-2 font-bold text-white">${escapeHtml(s.name)}</td>
+                        <td class="p-2 text-right text-slate-300">${s.ballsBowled}</td>
+                        <td class="p-2 text-right text-amber-400 font-bold">${s.dotBalls}</td>
+                        <td class="p-2 text-right text-rose-400 font-bold">${s.wickets}</td>
+                        <td class="p-2 text-right font-mono text-slate-300">${econ}</td>
+                        <td class="p-2 text-right font-mono text-cyan-300">${sr}</td>
+                    </tr>
+                `;
+            });
+
+            // Render Fielder Cards
+            const fieldCards = document.getElementById('fielder-cards-container');
+            fieldCards.innerHTML = '';
+            stats.forEach(s => {
+                fieldCards.innerHTML += `
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                        <span class="font-bold text-white">${escapeHtml(s.name)}</span>
+                        <div class="flex gap-2">
+                            <span class="text-emerald-400 font-bold">Catches: ${s.catches}</span>
+                            <span class="text-amber-400 font-bold">RO: ${s.runouts}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            renderCharts(stats);
+        }
+
+        function renderCharts(stats) {
+            const ctxBat = document.getElementById('batsmanRunChart').getContext('2d');
+            if (chartInstances.bat) chartInstances.bat.destroy();
+            chartInstances.bat = new Chart(ctxBat, {
                 type: 'bar',
-                data: { labels: [], datasets: [] },
+                data: {
+                    labels: stats.map(s => s.name),
+                    datasets: [{
+                        label: 'Runs Scored',
+                        data: stats.map(s => s.runs),
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const ctxBowl = document.getElementById('bowlerRunChart').getContext('2d');
+            if (chartInstances.bowl) chartInstances.bowl.destroy();
+            chartInstances.bowl = new Chart(ctxBowl, {
+                type: 'bar',
+                data: {
+                    labels: stats.map(s => s.name),
+                    datasets: [{
+                        label: 'Dot Balls Bowled',
+                        data: stats.map(s => s.dotBalls),
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const ctxField = document.getElementById('fielderChart').getContext('2d');
+            if (chartInstances.field) chartInstances.field.destroy();
+            chartInstances.field = new Chart(ctxField, {
+                type: 'bar',
+                data: {
+                    labels: stats.map(s => s.name),
+                    datasets: [{
+                        label: 'Catches',
+                        data: stats.map(s => s.catches),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function updateAnalyticsChart() {
-            if (!analyticsChart) return;
+        /* ---------------- HELPERS & DRAWER TOGGLES ---------------- */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-page').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('bg-emerald-600', 'text-white');
+                b.classList.add('text-slate-400');
+            });
 
-            if (currentAnalyticsSubTab === 'batters') {
-                document.getElementById('analytics-title').innerText = "Batsmen Performance (Runs)";
-                analyticsChart.data.labels = Object.keys(matchState.battersList);
-                analyticsChart.data.datasets = [{ label: 'Runs Scored', data: Object.values(matchState.battersList).map(b => b.runs), backgroundColor: '#10b981' }];
-            } else if (currentAnalyticsSubTab === 'bowlers') {
-                document.getElementById('analytics-title').innerText = "Bowlers Wickets Taken";
-                analyticsChart.data.labels = Object.keys(matchState.bowlersList);
-                analyticsChart.data.datasets = [{ label: 'Wickets', data: Object.values(matchState.bowlersList).map(b => b.wickets), backgroundColor: '#f59e0b' }];
-            } else {
-                document.getElementById('analytics-title').innerText = "Fielders Catches";
-                analyticsChart.data.labels = Object.keys(matchState.fieldersList);
-                analyticsChart.data.datasets = [{ label: 'Catches', data: Object.values(matchState.fieldersList).map(f => f.catches), backgroundColor: '#6366f1' }];
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const btn = document.getElementById(`nav-${tabId}`);
+            if (btn) {
+                btn.classList.add('bg-emerald-600', 'text-white');
+                btn.classList.remove('text-slate-400');
             }
-            analyticsChart.update();
+
+            if (tabId === 'analytics') switchAnalyticsSubTab('batsmen');
         }
 
-        function saveCurrentMatchToHistory() {
-            let history = JSON.parse(localStorage.getItem('cricvoice_history') || '[]');
-            const matchRecord = {
-                id: Date.now(),
-                title: matchSetup.matchNum,
-                date: matchSetup.date,
-                teams: `${matchSetup.teamA} vs ${matchSetup.teamB}`,
-                score: `${matchState.runs}/${matchState.wickets} (${Math.floor(matchState.balls / 6)}.${matchState.balls % 6} Ov)`,
-                batters: matchState.battersList,
-                bowlers: matchState.bowlersList
-            };
-            history.unshift(matchRecord);
-            localStorage.setItem('cricvoice_history', JSON.stringify(history));
-            alert('Match successfully saved to history archive!');
+        function toggleVoiceHelpDrawer() {
+            document.getElementById('voice-help-drawer').classList.toggle('hidden');
         }
 
-        function renderMatchHistoryList() {
-            let history = JSON.parse(localStorage.getItem('cricvoice_history') || '[]');
-            const container = document.getElementById('match-history-list');
-            if (history.length === 0) {
-                container.innerHTML = `<span class="text-xs text-slate-500 italic text-center py-6">No saved matches yet</span>`;
-                return;
-            }
-            container.innerHTML = history.map(m => `
-                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex flex-col gap-1.5 text-xs">
-                    <div class="flex justify-between items-center font-bold text-emerald-400">
-                        <span>${m.title} (${m.date})</span>
-                        <span class="text-white">${m.score}</span>
-                    </div>
-                    <span class="text-slate-400 text-[11px]">${m.teams}</span>
-                </div>
-            `).join('');
+        function openHistoryDrawer() {
+            document.getElementById('history-modal').classList.remove('hidden');
+        }
+
+        function closeHistoryDrawer() {
+            document.getElementById('history-modal').classList.add('hidden');
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
     </script>
 </body>
