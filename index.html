@@ -1179,4 +1179,21 @@
 
         function renderMatchHistoryList() {
             let history = JSON.parse(localStorage.getItem('cricvoice_history') || '[]');
-            const container = document.getElementById('match-history
+            const container = document.getElementById('match-history-list');
+            if (history.length === 0) {
+                container.innerHTML = `<span class="text-xs text-slate-500 italic text-center py-6">No saved matches yet</span>`;
+                return;
+            }
+            container.innerHTML = history.map(m => `
+                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex flex-col gap-1.5 text-xs">
+                    <div class="flex justify-between items-center font-bold text-emerald-400">
+                        <span>${m.title} (${m.date})</span>
+                        <span class="text-white">${m.score}</span>
+                    </div>
+                    <span class="text-slate-400 text-[11px]">${m.teams}</span>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
