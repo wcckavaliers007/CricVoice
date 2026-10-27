@@ -48,14 +48,14 @@
             </div>
         </div>
         <div class="flex items-center gap-1.5">
-            <button onclick="toggleHistoryDrawer()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
-                <i class="fa-solid fa-clock-rotate-left text-xs"></i> <span class="hidden sm:inline">History</span>
+            <button onclick="toggleHistoryDrawer()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
+                <i class="fa-solid fa-clock-rotate-left"></i> <span class="hidden sm:inline">History</span>
             </button>
             <button onclick="toggleHelpBox()" class="bg-indigo-950/80 border border-indigo-800/80 text-indigo-300 hover:bg-indigo-900 px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
-                <i class="fa-solid fa-circle-question text-xs"></i> Help
+                <i class="fa-solid fa-circle-question"></i> Help
             </button>
             <button id="undo-header-btn" onclick="undoLastBall()" class="bg-amber-950/60 border border-amber-800/60 text-amber-300 hover:bg-amber-900 px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 transition">
-                <i class="fa-solid fa-rotate-left text-xs"></i> <span id="undo-badge" class="bg-amber-500 text-slate-950 text-[9px] px-1 py-0.2 rounded-full font-bold">0</span>
+                <i class="fa-solid fa-rotate-left"></i> <span id="undo-badge" class="bg-amber-500 text-slate-950 text-[9px] px-1 py-0.2 rounded-full font-bold">0</span>
             </button>
             <button onclick="switchTab('setup')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-xl text-slate-300 transition">
                 <i class="fa-solid fa-users-gear text-xs"></i>
@@ -63,7 +63,7 @@
         </div>
     </header>
 
-    <!-- Main Mobile Container -->
+    <!-- Main Container -->
     <main class="flex-1 max-w-lg w-full mx-auto p-3 pb-24 flex flex-col gap-3">
 
         <!-- Navigation Tabs -->
@@ -110,11 +110,11 @@
 
                 <!-- Skill Legend -->
                 <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[10px] flex flex-wrap gap-2 items-center justify-between">
-                    <span class="font-bold text-slate-400">Skill Badges:</span>
-                    <span class="text-amber-300">💥 <strong>P</strong> (Power)</span>
-                    <span class="text-sky-300">⚡ <strong>F</strong> (Fast)</span>
-                    <span class="text-emerald-300">🌀 <strong>B</strong> (Spin)</span>
-                    <span class="text-indigo-300">🦅 <strong>D</strong> (Deep)</span>
+                    <span class="font-bold text-slate-400">Legend:</span>
+                    <span class="text-amber-300">💥<strong>P</strong>(Bat)</span>
+                    <span class="text-sky-300">⚡<strong>F</strong>(Fast)</span>
+                    <span class="text-emerald-300">🌀<strong>B</strong>(Bowl)</span>
+                    <span class="text-indigo-300">🦅<strong>D</strong>(Field)</span>
                 </div>
 
                 <!-- Player Mapping List -->
@@ -122,7 +122,7 @@
                     <div class="flex justify-between items-center">
                         <label class="text-[11px] font-medium text-slate-400 uppercase">Roster (<span id="total-roster-count">22</span>)</label>
                         <button onclick="addPlayerRow()" class="text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-900 px-2 py-0.5 rounded-lg transition">
-                            <i class="fa-solid fa-plus mr-1"></i> Add Player
+                            <i class="fa-solid fa-plus mr-1"></i> Add
                         </button>
                     </div>
 
@@ -222,7 +222,6 @@
                     <span class="text-sm text-slate-400 font-semibold">(<span id="total-overs">0.0</span> Ov)</span>
                 </div>
 
-                <!-- Dual Batsmen Display & Bowler Info -->
                 <div class="grid grid-cols-2 gap-2 pt-2.5 border-t border-slate-800 text-xs">
                     <div class="bg-slate-950 p-2 rounded-xl border border-slate-800/60 flex flex-col gap-1">
                         <div class="text-slate-400 text-[10px] font-medium flex justify-between">
@@ -242,13 +241,23 @@
                 </div>
             </div>
 
-            <!-- Quick Player Select Chips -->
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-xl flex flex-col gap-1.5">
-                <h3 class="text-[10px] font-semibold text-slate-400 uppercase">Quick Select Active Players</h3>
-                <div class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar" id="squad-quick-chips"></div>
+            <!-- Quick Player Select in 2 Lines (Team A & Team B) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-xl flex flex-col gap-2">
+                <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-bold text-emerald-400 uppercase flex items-center gap-1">
+                        <i class="fa-solid fa-shield"></i> Team A (Batting) - Click to Set Striker
+                    </span>
+                    <div class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar" id="team-a-chips"></div>
+                </div>
+                <div class="flex flex-col gap-1 pt-1.5 border-t border-slate-800/60">
+                    <span class="text-[10px] font-bold text-amber-400 uppercase flex items-center gap-1">
+                        <i class="fa-solid fa-shield"></i> Team B (Bowling) - Click to Set Bowler
+                    </span>
+                    <div class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar" id="team-b-chips"></div>
+                </div>
             </div>
 
-            <!-- Mic Engine -->
+            <!-- Voice Recognition Engine -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex flex-col items-center gap-3">
                 <div class="w-full flex justify-between items-center">
                     <span class="text-[10px] font-semibold text-slate-400 uppercase">Voice Recognition Engine</span>
@@ -780,12 +789,21 @@
         }
 
         function renderSquadChips() {
-            const container = document.getElementById('squad-quick-chips');
-            const activePlayers = matchSetup.players.filter(p => p.team !== 'Bench');
-            container.innerHTML = activePlayers.map(p => `
-                <button onclick="${p.team === 'Team A' ? `setStriker('${p.name}')` : `setBowler('${p.name}')`}" class="bg-slate-800 hover:bg-slate-700 ${p.team === 'Team A' ? 'text-emerald-300' : 'text-amber-300'} border border-slate-700 px-2.5 py-1 rounded-full text-xs shrink-0 flex items-center gap-1">
-                    <span>${p.name}</span>
-                    ${p.isCaptain ? '👑' : ''}
+            const teamAContainer = document.getElementById('team-a-chips');
+            const teamBContainer = document.getElementById('team-b-chips');
+
+            const teamAPlayers = matchSetup.players.filter(p => p.team === 'Team A');
+            const teamBPlayers = matchSetup.players.filter(p => p.team === 'Team B');
+
+            teamAContainer.innerHTML = teamAPlayers.map(p => `
+                <button onclick="setStriker('${p.name}')" class="bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 px-2.5 py-1 rounded-full text-xs shrink-0 flex items-center gap-1 font-semibold">
+                    <span>${p.name}</span> ${p.isCaptain ? '👑' : ''}
+                </button>
+            `).join('');
+
+            teamBContainer.innerHTML = teamBPlayers.map(p => `
+                <button onclick="setBowler('${p.name}')" class="bg-amber-950/60 hover:bg-amber-900 text-amber-300 border border-amber-800/60 px-2.5 py-1 rounded-full text-xs shrink-0 flex items-center gap-1 font-semibold">
+                    <span>${p.name}</span> ${p.isCaptain ? '👑' : ''}
                 </button>
             `).join('');
         }
@@ -1001,13 +1019,10 @@
             matchState.timeline.unshift(parsed.isWicket ? 'W' : (parsed.extraType ? 'Wd' : parsed.runs));
             if (matchState.timeline.length > 15) matchState.timeline.pop();
 
-            // Check Over Completion (6 Legal Deliveries)
             if (parsed.isLegal && matchState.balls % 6 === 0) {
-                // Auto swap striker & non-striker
                 const temp = matchState.striker;
                 matchState.striker = matchState.nonStriker;
                 matchState.nonStriker = temp;
-                
                 promptNextBowlerModal();
             }
 
@@ -1164,21 +1179,4 @@
 
         function renderMatchHistoryList() {
             let history = JSON.parse(localStorage.getItem('cricvoice_history') || '[]');
-            const container = document.getElementById('match-history-list');
-            if (history.length === 0) {
-                container.innerHTML = `<span class="text-xs text-slate-500 italic text-center py-6">No saved matches yet</span>`;
-                return;
-            }
-            container.innerHTML = history.map(m => `
-                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex flex-col gap-1.5 text-xs">
-                    <div class="flex justify-between items-center font-bold text-emerald-400">
-                        <span>${m.title} (${m.date})</span>
-                        <span class="text-white">${m.score}</span>
-                    </div>
-                    <span class="text-slate-400 text-[11px]">${m.teams}</span>
-                </div>
-            `).join('');
-        }
-    </script>
-</body>
-</html>
+            const container = document.getElementById('match-history
