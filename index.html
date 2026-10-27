@@ -30,7 +30,7 @@
     }
   </script>
   <style>
-    /* Custom Scrollbars & Compact Fixes */
+    /* Custom Scrollbars & Compact Styles */
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
@@ -145,7 +145,7 @@
           <span class="text-[10px] text-slate-500">Tap skills to toggle instantly</span>
         </div>
 
-        <!-- Compact Same-line Player Cards Container -->
+        <!-- Player Cards Grid Container -->
         <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5 max-h-[62vh] overflow-y-auto pr-1">
           <!-- Populated dynamically -->
         </div>
@@ -428,7 +428,7 @@
         </div>
       </section>
 
-      <!-- STEP 5: VISUAL ANALYTICS PAGE -->
+      <!-- STEP 5: VISUAL ANALYTICS PAGE (WITH PERCENTAGE BREAKDOWNS) -->
       <section id="sec-analytics" class="space-y-2 hidden">
         <div class="bg-slate-800/60 border border-slate-700/60 rounded-lg p-2 flex justify-between items-center">
           <h2 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
@@ -436,42 +436,48 @@
           </h2>
           <!-- Analytics Sub-Tabs -->
           <div class="flex gap-1 text-[11px]">
-            <button id="an-tab-batsmen" onclick="switchAnalyticsSubTab('batsmen')" class="px-2 py-0.5 rounded bg-slate-700 text-emerald-300 font-semibold">Batsmen</button>
-            <button id="an-tab-bowlers" onclick="switchAnalyticsSubTab('bowlers')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400">Bowlers</button>
+            <button id="an-tab-batsmen" onclick="switchAnalyticsSubTab('batsmen')" class="px-2 py-0.5 rounded bg-slate-700 text-emerald-300 font-semibold">Batsmen %</button>
+            <button id="an-tab-bowlers" onclick="switchAnalyticsSubTab('bowlers')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400">Bowlers %</button>
             <button id="an-tab-fielders" onclick="switchAnalyticsSubTab('fielders')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400">Fielders</button>
           </div>
         </div>
 
-        <!-- BATSMEN ANALYTICS VIEW -->
+        <!-- BATSMEN PERCENTAGE ANALYTICS VIEW -->
         <div id="analytics-batsmen-view" class="space-y-2">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div class="bg-slate-800/90 border border-slate-700 p-2.5 rounded-lg">
-              <h3 class="text-xs font-bold text-slate-300 mb-2">Run Distribution Breakdown (0s, 1s, 2s, 4s, 6s)</h3>
-              <div class="relative h-48">
+              <h3 class="text-xs font-bold text-slate-300 mb-1 flex justify-between">
+                <span>Runs % Breakdown (Dots, 1s, 2s, 3s, 4s, 6s)</span>
+                <span class="text-[10px] text-emerald-400 font-normal">% of total runs</span>
+              </h3>
+              <div class="relative h-52">
                 <canvas id="chart-batsmen-runs"></canvas>
               </div>
             </div>
             <div class="bg-slate-800/90 border border-slate-700 p-2.5 rounded-lg">
-              <h3 class="text-xs font-bold text-slate-300 mb-2">Strike Rate Leaderboard</h3>
-              <div id="batsmen-sr-list" class="space-y-1.5 text-xs max-h-48 overflow-y-auto">
+              <h3 class="text-xs font-bold text-slate-300 mb-2">Detailed Batsmen % Contribution</h3>
+              <div id="batsmen-pct-list" class="space-y-2 text-xs max-h-52 overflow-y-auto pr-1">
                 <!-- Dynamically Generated -->
               </div>
             </div>
           </div>
         </div>
 
-        <!-- BOWLERS ANALYTICS VIEW -->
+        <!-- BOWLERS PERCENTAGE ANALYTICS VIEW -->
         <div id="analytics-bowlers-view" class="space-y-2 hidden">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div class="bg-slate-800/90 border border-slate-700 p-2.5 rounded-lg">
-              <h3 class="text-xs font-bold text-slate-300 mb-2">Economy Rates & Dot Ball %</h3>
-              <div class="relative h-48">
+              <h3 class="text-xs font-bold text-slate-300 mb-1 flex justify-between">
+                <span>Deliveries % Breakdown</span>
+                <span class="text-[10px] text-cyan-400 font-normal">% of balls bowled</span>
+              </h3>
+              <div class="relative h-52">
                 <canvas id="chart-bowlers-econ"></canvas>
               </div>
             </div>
             <div class="bg-slate-800/90 border border-slate-700 p-2.5 rounded-lg">
-              <h3 class="text-xs font-bold text-slate-300 mb-2">Wicket Takers Overview</h3>
-              <div id="bowlers-wickets-list" class="space-y-1.5 text-xs max-h-48 overflow-y-auto">
+              <h3 class="text-xs font-bold text-slate-300 mb-2">Detailed Bowler Balls % Distribution</h3>
+              <div id="bowlers-pct-list" class="space-y-2 text-xs max-h-52 overflow-y-auto pr-1">
                 <!-- Dynamically Generated -->
               </div>
             </div>
@@ -491,7 +497,7 @@
 
     </main>
 
-    <!-- SIDE-BY-SIDE QUICK VOICE & ACTION REFERENCE DRAWER (Sticky on Desktop, Slide-out / Expandable on Mobile) -->
+    <!-- SIDE-BY-SIDE QUICK VOICE & ACTION REFERENCE DRAWER -->
     <aside id="help-drawer" class="w-full md:w-80 lg:w-96 bg-slate-950 border border-slate-800 rounded-lg p-2.5 flex flex-col shrink-0 space-y-2 overflow-y-auto max-h-[85vh] hidden md:flex">
       
       <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
@@ -577,15 +583,6 @@
           </div>
         </div>
 
-        <!-- EXAMPLE VOICE SENTENCES -->
-        <div class="bg-slate-900/80 p-2 rounded border border-slate-800 text-[11px] space-y-1">
-          <div class="text-[10px] font-bold text-slate-400 uppercase">Voice Phrase Examples:</div>
-          <div class="text-emerald-400 font-mono">"4 runs cover drive by Arun"</div>
-          <div class="text-emerald-400 font-mono">"Wide ball leg side"</div>
-          <div class="text-emerald-400 font-mono">"Out caught behind by Viswa"</div>
-          <div class="text-emerald-400 font-mono">"Run out direct hit by Prash"</div>
-        </div>
-
       </div>
     </aside>
 
@@ -600,7 +597,6 @@
       <button onclick="toggleHistoryDrawer()" class="text-slate-400 hover:text-white text-sm"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div id="history-list" class="space-y-2 text-xs">
-      <!-- Saved matches list dynamically loaded from LocalStorage -->
       <div class="text-slate-500 text-center text-[11px] py-4">No saved matches in history</div>
     </div>
   </div>
@@ -622,9 +618,26 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT APP LOGIC -->
+  <!-- AUTOMATIC OVER COMPLETION BOWLER SELECTOR MODAL -->
+  <div id="over-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-slate-900 border border-cyan-500/50 rounded-xl p-4 max-w-xs w-full shadow-2xl space-y-3 text-center">
+      <div class="w-10 h-10 bg-cyan-950 border border-cyan-500 text-cyan-400 rounded-full flex items-center justify-center mx-auto text-lg">
+        <i class="fa-solid fa-arrow-rotate-right"></i>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold text-cyan-300">Over Completed! 🔔</h4>
+        <p class="text-xs text-slate-400 mt-1">6 legal deliveries completed. Batsmen swapped!</p>
+        <p class="text-xs font-semibold text-slate-200 mt-2">Select Next Bowler:</p>
+      </div>
+      <div id="next-bowlers-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+        <!-- Dynamically filled with bowling squad -->
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
   <script>
-    // PRE-LOADED DEFAULT PLAYERS WITH SKILL SPLIT: Batting [P], Bowling [F/B], Fielding [D]
+    // PRE-LOADED 22 PLAYERS WITH SKILL SPLIT
     const DEFAULT_ROSTER = [
       { name: 'Arun', p: true, f: true, b: false, d: true },
       { name: 'Siva', p: true, f: false, b: true, d: false },
@@ -657,11 +670,11 @@
     let captainA = null;
     let captainB = null;
 
-    // MATCH SCOREBOARD STATE
+    // MATCH SCOREBOARD STATE WITH DETAILED RUN/BALL TRACKING
     let matchState = {
       teamAName: "Team Alpha",
       teamBName: "Team Titans",
-      battingTeam: "A", // 'A' or 'B'
+      battingTeam: "A",
       totalRuns: 0,
       wickets: 0,
       legalBalls: 0,
@@ -710,15 +723,12 @@
       if(tabId === 'analytics') renderAnalytics();
     }
 
-    // HELP DRAWER TOGGLE
     function toggleHelpDrawer() {
-      const drawer = document.getElementById('help-drawer');
-      drawer.classList.toggle('hidden');
+      document.getElementById('help-drawer').classList.toggle('hidden');
     }
 
     function toggleHistoryDrawer() {
-      const drawer = document.getElementById('history-drawer');
-      drawer.classList.toggle('translate-x-full');
+      document.getElementById('history-drawer').classList.toggle('translate-x-full');
     }
 
     // STEP 1: ROSTER MANAGEMENT
@@ -781,13 +791,12 @@
       renderRoster();
     }
 
-    // STEP 2: AUTO-BALANCE TEAM ALLOCATION ALGORITHM
+    // STEP 2: AUTO-BALANCE TEAMS
     function autoBalanceTeams() {
       let shuffled = [...activeRoster].sort(() => Math.random() - 0.5);
       teamA = [];
       teamB = [];
 
-      // Balanced Distribution Heuristic based on skills
       shuffled.sort((a, b) => {
         let scoreA = (a.p ? 3 : 0) + (a.f ? 3 : 0) + (a.b ? 2 : 0) + (a.d ? 1 : 0);
         let scoreB = (b.p ? 3 : 0) + (b.f ? 3 : 0) + (b.b ? 2 : 0) + (b.d ? 1 : 0);
@@ -799,7 +808,6 @@
         else teamB.push(player);
       });
 
-      // Default Captains if not set
       if(teamA.length > 0) captainA = teamA[0].name;
       if(teamB.length > 0) captainB = teamB[0].name;
 
@@ -843,14 +851,12 @@
         container.appendChild(row);
       });
 
-      // Update counters
       document.getElementById(`team-${teamKey}-cnt`).innerText = list.length;
       document.getElementById(`team-${teamKey}-p`).innerText = countP;
       document.getElementById(`team-${teamKey}-f`).innerText = countF;
       document.getElementById(`team-${teamKey}-bowl`).innerText = countBowl;
       document.getElementById(`team-${teamKey}-d`).innerText = countD;
 
-      // Calculate Firepower score
       let firepower = (countP * 3) + (countF * 2.5) + (countBowl * 2) + (countD * 1);
       document.getElementById(`team-${teamKey}-firepower`).innerText = firepower.toFixed(1);
 
@@ -868,19 +874,24 @@
       matchState.teamAName = document.getElementById('team-a-name').value.trim() || 'Team Alpha';
       matchState.teamBName = document.getElementById('team-b-name').value.trim() || 'Team Titans';
 
-      // Initialize Batter & Bowler stats map
       const currentBattingTeam = (matchState.battingTeam === 'A') ? teamA : teamB;
       const currentBowlingTeam = (matchState.battingTeam === 'A') ? teamB : teamA;
 
       currentBattingTeam.forEach(p => {
-        matchState.battingStats[p.name] = { runs: 0, balls: 0, fours: 0, sixes: 0, isOut: false, dismissal: 'Not Out' };
+        matchState.battingStats[p.name] = { 
+          runs: 0, balls: 0, 
+          dots: 0, ones: 0, twos: 0, threes: 0, fours: 0, fives: 0, sixes: 0, 
+          isOut: false, dismissal: 'Not Out' 
+        };
       });
 
       currentBowlingTeam.forEach(p => {
-        matchState.bowlingStats[p.name] = { balls: 0, runs: 0, wickets: 0, dots: 0 };
+        matchState.bowlingStats[p.name] = { 
+          balls: 0, runs: 0, wickets: 0, 
+          dots: 0, ones: 0, twos: 0, threes: 0, fours: 0, sixes: 0, extras: 0 
+        };
       });
 
-      // Default Openers
       matchState.striker = currentBattingTeam[0] ? currentBattingTeam[0].name : 'Batter 1';
       matchState.nonStriker = currentBattingTeam[1] ? currentBattingTeam[1].name : 'Batter 2';
       matchState.bowler = currentBowlingTeam[0] ? currentBowlingTeam[0].name : 'Bowler 1';
@@ -901,7 +912,6 @@
       document.getElementById('live-crr').innerText = crr;
       document.getElementById('live-extras').innerText = matchState.extras;
 
-      // Striker & Non-Striker
       document.getElementById('striker-name').innerText = matchState.striker || 'None';
       const sStats = matchState.battingStats[matchState.striker] || { runs: 0, balls: 0 };
       document.getElementById('striker-runs').innerText = sStats.runs;
@@ -912,7 +922,6 @@
       document.getElementById('non-striker-runs').innerText = nsStats.runs;
       document.getElementById('non-striker-balls').innerText = nsStats.balls;
 
-      // Bowler
       document.getElementById('bowler-name').innerText = matchState.bowler || 'None';
       const bStats = matchState.bowlingStats[matchState.bowler] || { balls: 0, runs: 0, wickets: 0 };
       let bOvers = `${Math.floor(bStats.balls / 6)}.${bStats.balls % 6}`;
@@ -922,7 +931,6 @@
       let bEcon = bStats.balls > 0 ? ((bStats.runs / bStats.balls) * 6).toFixed(1) : '0.0';
       document.getElementById('bowler-econ').innerText = bEcon;
 
-      // Timeline
       const timelineContainer = document.getElementById('over-timeline');
       if(matchState.timeline.length === 0) {
         timelineContainer.innerHTML = '<span class="text-[10px] text-slate-500 italic">No balls bowled yet</span>';
@@ -935,7 +943,7 @@
       document.getElementById('undo-count').innerText = matchState.historyStack.length;
     }
 
-    // SCORE LOGIC & VOICE ENGINE
+    // SCORE LOGIC & VOICE ENGINE WITH OVER AUTOMATION
     function processCommand(phrase) {
       document.getElementById('speech-transcript').innerText = `"${phrase}"`;
       pendingCommand = phrase;
@@ -952,7 +960,7 @@
     }
 
     function commitBallAction(cmd) {
-      // Save snapshot for Undo
+      // Save snapshot for Undo capability
       matchState.historyStack.push(JSON.parse(JSON.stringify({
         totalRuns: matchState.totalRuns,
         wickets: matchState.wickets,
@@ -977,6 +985,7 @@
       else if(cmd.includes('2') || cmd.includes('two')) { runs = 2; tag = '2'; }
       else if(cmd.includes('3') || cmd.includes('three')) { runs = 3; tag = '3'; }
       else if(cmd.includes('4') || cmd.includes('four') || cmd.includes('boundary')) { runs = 4; tag = '4'; }
+      else if(cmd.includes('5') || cmd.includes('five')) { runs = 5; tag = '5'; }
       else if(cmd.includes('6') || cmd.includes('six') || cmd.includes('maximum')) { runs = 6; tag = '6'; }
       else if(cmd.includes('dot')) { runs = 0; tag = '0'; }
       else if(cmd.includes('wide')) { runs = 1; isExtra = true; isLegal = false; tag = 'WD'; }
@@ -987,18 +996,22 @@
         tag = 'W';
       }
 
-      // Update Total Runs & Extras
       matchState.totalRuns += runs;
       if(isExtra) matchState.extras += runs;
 
-      // Update Batter
+      // Update Batter detailed run breakdown
       if(matchState.striker && matchState.battingStats[matchState.striker]) {
         let b = matchState.battingStats[matchState.striker];
         if(!isExtra || cmd.includes('bye')) {
           b.runs += (isExtra ? 0 : runs);
           if(isLegal) b.balls++;
-          if(runs === 4) b.fours++;
-          if(runs === 6) b.sixes++;
+          if(runs === 0) b.dots++;
+          else if(runs === 1) b.ones++;
+          else if(runs === 2) b.twos++;
+          else if(runs === 3) b.threes++;
+          else if(runs === 4) b.fours++;
+          else if(runs === 5) b.fives++;
+          else if(runs === 6) b.sixes++;
         }
         if(isWicket) {
           b.isOut = true;
@@ -1007,35 +1020,80 @@
         }
       }
 
-      // Update Bowler
+      // Update Bowler detailed delivery breakdown
       if(matchState.bowler && matchState.bowlingStats[matchState.bowler]) {
         let bw = matchState.bowlingStats[matchState.bowler];
         bw.runs += runs;
         if(isLegal) bw.balls++;
-        if(runs === 0 && isLegal && !isExtra) bw.dots++;
+        else bw.extras++;
+
+        if(isExtra) { /* counted as extra */ }
+        else if(runs === 0) bw.dots++;
+        else if(runs === 1) bw.ones++;
+        else if(runs === 2) bw.twos++;
+        else if(runs === 3) bw.threes++;
+        else if(runs === 4) bw.fours++;
+        else if(runs === 6) bw.sixes++;
+
         if(isWicket && !cmd.includes('run out')) bw.wickets++;
       }
 
       if(isLegal) matchState.legalBalls++;
-
-      // Track Timeline
       matchState.timeline.push(tag);
 
-      // Strike Rotation
+      // Mid-over odd runs strike rotation
       if(runs % 2 !== 0 && !isWicket) {
-        let temp = matchState.striker;
-        matchState.striker = matchState.nonStriker;
-        matchState.nonStriker = temp;
-      }
-
-      // Over End Check
-      if(isLegal && matchState.legalBalls % 6 === 0) {
-        let temp = matchState.striker;
-        matchState.striker = matchState.nonStriker;
-        matchState.nonStriker = temp;
+        swapStriker();
       }
 
       updateLiveDisplay();
+
+      // Check Over Completion (6 Legal Deliveries)
+      if(isLegal && matchState.legalBalls % 6 === 0) {
+        // 1. Automatic Striker Rotation
+        swapStriker();
+        updateLiveDisplay();
+
+        // 2. Prompt for New Bowler via Modal
+        setTimeout(() => {
+          promptNextOverBowler();
+        }, 300);
+      }
+    }
+
+    function swapStriker() {
+      let temp = matchState.striker;
+      matchState.striker = matchState.nonStriker;
+      matchState.nonStriker = temp;
+    }
+
+    function promptNextOverBowler() {
+      const currentBowlingTeam = (matchState.battingTeam === 'A') ? teamB : teamA;
+      const listContainer = document.getElementById('next-bowlers-list');
+      listContainer.innerHTML = '';
+
+      currentBowlingTeam.forEach(p => {
+        const isCurrent = (p.name === matchState.bowler);
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left p-2 rounded text-xs font-semibold border flex justify-between items-center ${isCurrent ? 'bg-slate-800 border-slate-700 text-slate-400 opacity-60' : 'bg-cyan-950/60 hover:bg-cyan-900 border-cyan-700/60 text-cyan-200'}`;
+        btn.innerHTML = `
+          <span>${p.name} ${isCurrent ? '(Just Bowled)' : ''}</span>
+          <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        `;
+        btn.onclick = () => {
+          matchState.bowler = p.name;
+          if(!matchState.bowlingStats[matchState.bowler]) {
+            matchState.bowlingStats[matchState.bowler] = { 
+              balls: 0, runs: 0, wickets: 0, dots: 0, ones: 0, twos: 0, threes: 0, fours: 0, sixes: 0, extras: 0 
+            };
+          }
+          document.getElementById('over-modal').classList.add('hidden');
+          updateLiveDisplay();
+        };
+        listContainer.appendChild(btn);
+      });
+
+      document.getElementById('over-modal').classList.remove('hidden');
     }
 
     function undoLastBall() {
@@ -1057,16 +1115,7 @@
     }
 
     function promptChangeBowler() {
-      const currentBowlingTeam = (matchState.battingTeam === 'A') ? teamB : teamA;
-      const names = currentBowlingTeam.map(p => p.name).join('\n');
-      const chosen = prompt(`Select New Bowler:\n${names}`, matchState.bowler);
-      if(chosen) {
-        matchState.bowler = chosen.trim();
-        if(!matchState.bowlingStats[matchState.bowler]) {
-          matchState.bowlingStats[matchState.bowler] = { balls: 0, runs: 0, wickets: 0, dots: 0 };
-        }
-        updateLiveDisplay();
-      }
+      promptNextOverBowler();
     }
 
     function swapInnings() {
@@ -1103,7 +1152,7 @@
         processCommand(transcript);
       };
 
-      recognition.onerror = function(event) {
+      recognition.onerror = function() {
         document.getElementById('voice-status-text').innerText = "Voice Error / Timed Out";
         resetMicUI();
       };
@@ -1133,7 +1182,7 @@
     function renderScorecard() {
       document.getElementById('scorecard-batting-team-label').innerText = (matchState.battingTeam === 'A') ? matchState.teamAName : matchState.teamBName;
 
-      // Batting Table
+      // Batting Scorecard Table
       const bBody = document.getElementById('scorecard-batting-body');
       bBody.innerHTML = '';
       Object.keys(matchState.battingStats).forEach(name => {
@@ -1153,7 +1202,7 @@
         bBody.appendChild(tr);
       });
 
-      // Bowling Table
+      // Bowling Scorecard Table
       const bwBody = document.getElementById('scorecard-bowling-body');
       bwBody.innerHTML = '';
       Object.keys(matchState.bowlingStats).forEach(name => {
@@ -1176,7 +1225,7 @@
       });
     }
 
-    // STEP 5: VISUAL ANALYTICS
+    // STEP 5: VISUAL ANALYTICS WITH PERCENTAGE BREAKDOWNS
     function switchAnalyticsSubTab(tab) {
       ['batsmen', 'bowlers', 'fielders'].forEach(t => {
         const v = document.getElementById(`analytics-${t}-view`);
@@ -1193,56 +1242,131 @@
     }
 
     function renderAnalytics() {
-      // Batsmen Chart
-      const bNames = Object.keys(matchState.battingStats);
-      const bRuns = bNames.map(n => matchState.battingStats[n].runs);
+      // 1. BATSMEN PERCENTAGE RUN BREAKDOWN
+      let totalTeamRuns = matchState.totalRuns || 1;
+      let aggOnes = 0, aggTwos = 0, aggThrees = 0, aggFours = 0, aggFives = 0, aggSixes = 0, aggDots = 0;
 
+      const pctListContainer = document.getElementById('batsmen-pct-list');
+      pctListContainer.innerHTML = '';
+
+      Object.keys(matchState.battingStats).forEach(name => {
+        let b = matchState.battingStats[name];
+        aggDots += (b.dots || 0);
+        aggOnes += (b.ones || 0) * 1;
+        aggTwos += (b.twos || 0) * 2;
+        aggThrees += (b.threes || 0) * 3;
+        aggFours += (b.fours || 0) * 4;
+        aggFives += (b.fives || 0) * 5;
+        aggSixes += (b.sixes || 0) * 6;
+
+        let bRuns = b.runs || 0;
+        let p1 = bRuns > 0 ? (((b.ones || 0)*1 / bRuns) * 100).toFixed(0) : 0;
+        let p2 = bRuns > 0 ? (((b.twos || 0)*2 / bRuns) * 100).toFixed(0) : 0;
+        let p4 = bRuns > 0 ? (((b.fours || 0)*4 / bRuns) * 100).toFixed(0) : 0;
+        let p6 = bRuns > 0 ? (((b.sixes || 0)*6 / bRuns) * 100).toFixed(0) : 0;
+
+        let card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 p-1.5 rounded space-y-1";
+        card.innerHTML = `
+          <div class="flex justify-between items-center font-semibold text-slate-200">
+            <span>${name}</span>
+            <span class="text-emerald-400">${b.runs} Runs (${b.balls}b)</span>
+          </div>
+          <div class="grid grid-cols-4 gap-1 text-[10px] text-center">
+            <div class="bg-slate-800 p-0.5 rounded text-slate-300">1s: <b>${p1}%</b></div>
+            <div class="bg-slate-800 p-0.5 rounded text-slate-300">2s: <b>${p2}%</b></div>
+            <div class="bg-amber-950/60 p-0.5 rounded text-amber-300 border border-amber-900">4s: <b>${p4}%</b></div>
+            <div class="bg-purple-950/60 p-0.5 rounded text-purple-300 border border-purple-900">6s: <b>${p6}%</b></div>
+          </div>
+        `;
+        pctListContainer.appendChild(card);
+      });
+
+      // Overall Team Batting Percentage Chart
       const ctx1 = document.getElementById('chart-batsmen-runs').getContext('2d');
       if(batsmenChart) batsmenChart.destroy();
       batsmenChart = new Chart(ctx1, {
-        type: 'bar',
+        type: 'doughnut',
         data: {
-          labels: bNames,
+          labels: ['1s Runs %', '2s Runs %', '3s Runs %', '4s Runs %', '6s Runs %'],
           datasets: [{
-            label: 'Runs Scored',
-            data: bRuns,
-            backgroundColor: '#10b981'
+            data: [
+              ((aggOnes / totalTeamRuns) * 100).toFixed(1),
+              ((aggTwos / totalTeamRuns) * 100).toFixed(1),
+              ((aggThrees / totalTeamRuns) * 100).toFixed(1),
+              ((aggFours / totalTeamRuns) * 100).toFixed(1),
+              ((aggSixes / totalTeamRuns) * 100).toFixed(1)
+            ],
+            backgroundColor: ['#10b981', '#06b6d4', '#3b82f6', '#f59e0b', '#a855f7']
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }
+          plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } }
         }
       });
 
-      // Bowlers Chart
-      const bwNames = Object.keys(matchState.bowlingStats);
-      const bwEcon = bwNames.map(n => {
-        let bw = matchState.bowlingStats[n];
-        return bw.balls > 0 ? ((bw.runs / bw.balls) * 6).toFixed(1) : 0;
+      // 2. BOWLERS PERCENTAGE DELIVERIES BREAKDOWN
+      let aggTotalBalls = 0, aggBwDots = 0, aggBwOnes = 0, aggBwTwos = 0, aggBwFours = 0, aggBwSixes = 0, aggBwExtras = 0;
+      const bwListContainer = document.getElementById('bowlers-pct-list');
+      bwListContainer.innerHTML = '';
+
+      Object.keys(matchState.bowlingStats).forEach(name => {
+        let bw = matchState.bowlingStats[name];
+        let totDeliveries = (bw.balls || 0) + (bw.extras || 0);
+        aggTotalBalls += totDeliveries;
+        aggBwDots += (bw.dots || 0);
+        aggBwOnes += (bw.ones || 0);
+        aggBwTwos += (bw.twos || 0);
+        aggBwFours += (bw.fours || 0);
+        aggBwSixes += (bw.sixes || 0);
+        aggBwExtras += (bw.extras || 0);
+
+        let dotPct = totDeliveries > 0 ? (((bw.dots || 0) / totDeliveries) * 100).toFixed(0) : 0;
+        let boundaryPct = totDeliveries > 0 ? ((((bw.fours || 0) + (bw.sixes || 0)) / totDeliveries) * 100).toFixed(0) : 0;
+        let extraPct = totDeliveries > 0 ? (((bw.extras || 0) / totDeliveries) * 100).toFixed(0) : 0;
+
+        let card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 p-1.5 rounded space-y-1";
+        card.innerHTML = `
+          <div class="flex justify-between items-center font-semibold text-slate-200">
+            <span>${name}</span>
+            <span class="text-cyan-400">${bw.balls} Balls | W: ${bw.wickets}</span>
+          </div>
+          <div class="grid grid-cols-3 gap-1 text-[10px] text-center">
+            <div class="bg-emerald-950/60 p-0.5 rounded text-emerald-300 border border-emerald-900">Dots: <b>${dotPct}%</b></div>
+            <div class="bg-amber-950/60 p-0.5 rounded text-amber-300 border border-amber-900">Boundaries: <b>${boundaryPct}%</b></div>
+            <div class="bg-cyan-950/60 p-0.5 rounded text-cyan-300 border border-cyan-900">Extras: <b>${extraPct}%</b></div>
+          </div>
+        `;
+        bwListContainer.appendChild(card);
       });
 
+      // Overall Bowling Deliveries Percentage Chart
+      const safeTotDeliveries = aggTotalBalls || 1;
       const ctx2 = document.getElementById('chart-bowlers-econ').getContext('2d');
       if(bowlersChart) bowlersChart.destroy();
       bowlersChart = new Chart(ctx2, {
-        type: 'line',
+        type: 'pie',
         data: {
-          labels: bwNames,
+          labels: ['Dot Balls %', '1s Given %', '2s Given %', '4s Conceded %', '6s Conceded %', 'Extras %'],
           datasets: [{
-            label: 'Economy Rate',
-            data: bwEcon,
-            borderColor: '#06b6d4',
-            backgroundColor: 'rgba(6, 182, 212, 0.2)',
-            fill: true
+            data: [
+              ((aggBwDots / safeTotDeliveries) * 100).toFixed(1),
+              ((aggBwOnes / safeTotDeliveries) * 100).toFixed(1),
+              ((aggBwTwos / safeTotDeliveries) * 100).toFixed(1),
+              ((aggBwFours / safeTotDeliveries) * 100).toFixed(1),
+              ((aggBwSixes / safeTotDeliveries) * 100).toFixed(1),
+              ((aggBwExtras / safeTotDeliveries) * 100).toFixed(1)
+            ],
+            backgroundColor: ['#10b981', '#06b6d4', '#3b82f6', '#f59e0b', '#ef4444', '#64748b']
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }
+          plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } }
         }
       });
     }
