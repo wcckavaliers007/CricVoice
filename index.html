@@ -27,7 +27,6 @@
         }
         .listening-active { animation: pulse-glow 2s infinite; }
         .drag-over { border-color: #10B981 !important; background-color: rgba(16, 185, 129, 0.1) !important; }
-        /* Mobile-First Custom Scrollbar Hiding */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -64,7 +63,7 @@
         </div>
     </header>
 
-    <!-- Main Container (Mobile First max-width) -->
+    <!-- Main Container -->
     <main class="flex-1 max-w-lg w-full mx-auto p-3 pb-24 flex flex-col gap-3">
 
         <!-- Navigation Tabs -->
@@ -163,9 +162,10 @@
                             </div>
                             <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
                                 <span class="bg-slate-900 px-1.5 py-0.5 rounded">Players: <strong id="count-a-players" class="text-white">0</strong></span>
+                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Power: <strong id="count-a-power" class="text-amber-400">0</strong></span>
                                 <span class="bg-slate-900 px-1.5 py-0.5 rounded">Fast: <strong id="count-a-fast" class="text-sky-400">0</strong></span>
                                 <span class="bg-slate-900 px-1.5 py-0.5 rounded">Bowlers: <strong id="count-a-bowlers" class="text-emerald-400">0</strong></span>
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Deep: <strong id="count-a-deep" class="text-indigo-400">0</strong></span>
+                                <span class="bg-slate-900 px-1.5 py-0.5 rounded col-span-2">Deep: <strong id="count-a-deep" class="text-indigo-400">0</strong></span>
                             </div>
                             <div class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded">
                                 Captain: <strong id="captain-a-name" class="text-amber-400">None</strong>
@@ -185,9 +185,10 @@
                             </div>
                             <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
                                 <span class="bg-slate-900 px-1.5 py-0.5 rounded">Players: <strong id="count-b-players" class="text-white">0</strong></span>
+                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Power: <strong id="count-b-power" class="text-amber-400">0</strong></span>
                                 <span class="bg-slate-900 px-1.5 py-0.5 rounded">Fast: <strong id="count-b-fast" class="text-sky-400">0</strong></span>
                                 <span class="bg-slate-900 px-1.5 py-0.5 rounded">Bowlers: <strong id="count-b-bowlers" class="text-emerald-400">0</strong></span>
-                                <span class="bg-slate-900 px-1.5 py-0.5 rounded">Deep: <strong id="count-b-deep" class="text-indigo-400">0</strong></span>
+                                <span class="bg-slate-900 px-1.5 py-0.5 rounded col-span-2">Deep: <strong id="count-b-deep" class="text-indigo-400">0</strong></span>
                             </div>
                             <div class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded">
                                 Captain: <strong id="captain-b-name" class="text-amber-400">None</strong>
@@ -584,7 +585,7 @@
         function updatePlayerTeam(index, val) { matchSetup.players[index].team = val; }
         function toggleSkill(index, skillKey, val) {
             if (!matchSetup.players[index].skills) matchSetup.players[index].skills = {};
-            if (skillKey === 'F' && val) matchSetup.players[index].skills.B = false; // mutually exclusive Bowl type
+            if (skillKey === 'F' && val) matchSetup.players[index].skills.B = false;
             if (skillKey === 'B' && val) matchSetup.players[index].skills.F = false;
             matchSetup.players[index].skills[skillKey] = val;
             renderPlayerMappingRows();
@@ -610,26 +611,44 @@
             return Math.min(100, Math.round((score / (players.length * 25)) * 100));
         }
 
+        // Multi-Pass Balanced Rehash Engine
         function autoBalanceTeams() {
             const activePlayers = matchSetup.players.filter(p => p.team !== 'Bench');
             
-            // Separate players with bowlers/allrounders
-            const bowlers = activePlayers.filter(p => p.skills?.F || p.skills?.B);
-            const others = activePlayers.filter(p => !(p.skills?.F || p.skills?.B));
+            // Randomize slightly on each rehash click for fresh distribution
+            activePlayers.sort(() => Math.random() - 0.5);
+
+            // Categorize by skill profiles to ensure equal distribution
+            const powerBowlers = activePlayers.filter(p => p.skills?.P && (p.skills?.F || p.skills?.B));
+            const powerOnly = activePlayers.filter(p => p.skills?.P && !(p.skills?.F || p.skills?.B));
+            const bowlOnly = activePlayers.filter(p => !p.skills?.P && (p.skills?.F || p.skills?.B));
+            const others = activePlayers.filter(p => !p.skills?.P && !(p.skills?.F || p.skills?.B));
 
             let teamA = [];
             let teamB = [];
 
-            // Distribute bowlers equally
-            bowlers.forEach((b, i) => {
-                if (i % 2 === 0) teamA.push(b);
-                else teamB.push(b);
-            });
+            const distributeGroup = (group) => {
+                group.forEach(p => {
+                    const countA = teamA.length;
+                    const countB = teamB.length;
+                    if (countA < countB) {
+                        teamA.push(p);
+                    } else if (countB < countA) {
+                        teamB.push(p);
+                    } else {
+                        // Tie breaker: balance deep fielders or alternate
+                        const deepA = teamA.filter(x => x.skills?.D).length;
+                        const deepB = teamB.filter(x => x.skills?.D).length;
+                        if (deepA <= deepB) teamA.push(p);
+                        else teamB.push(p);
+                    }
+                });
+            };
 
-            others.forEach((o, i) => {
-                if (i % 2 === 0) teamA.push(o);
-                else teamB.push(o);
-            });
+            distributeGroup(powerBowlers);
+            distributeGroup(powerOnly);
+            distributeGroup(bowlOnly);
+            distributeGroup(others);
 
             matchSetup.players.forEach(p => {
                 if (p.team === 'Bench') return;
@@ -659,6 +678,7 @@
                 const zone = document.getElementById(`dropzone-${cat}`);
                 const players = matchSetup.players.filter(p => p.team === cat);
 
+                const powerCount = players.filter(p => p.skills?.P).length;
                 const fastCount = players.filter(p => p.skills?.F).length;
                 const totalBowlers = players.filter(p => p.skills?.F || p.skills?.B).length;
                 const deepCount = players.filter(p => p.skills?.D).length;
@@ -667,6 +687,7 @@
 
                 if (cat === 'Team A') {
                     document.getElementById('count-a-players').innerText = players.length;
+                    document.getElementById('count-a-power').innerText = powerCount;
                     document.getElementById('count-a-fast').innerText = fastCount;
                     document.getElementById('count-a-bowlers').innerText = totalBowlers;
                     document.getElementById('count-a-deep').innerText = deepCount;
@@ -674,6 +695,7 @@
                     document.getElementById('captain-a-name').innerText = cap ? cap.name : 'None';
                 } else {
                     document.getElementById('count-b-players').innerText = players.length;
+                    document.getElementById('count-b-power').innerText = powerCount;
                     document.getElementById('count-b-fast').innerText = fastCount;
                     document.getElementById('count-b-bowlers').innerText = totalBowlers;
                     document.getElementById('count-b-deep').innerText = deepCount;
