@@ -140,29 +140,53 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    
+                    <!-- Team A Allocation Card -->
                     <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex flex-col gap-1.5">
                         <div class="pb-1.5 border-b border-slate-800 flex flex-col gap-1">
                             <div class="flex justify-between items-center">
                                 <span id="preview-team-a-title" class="font-bold text-[11px] text-emerald-400">Team A</span>
                                 <span class="text-[9px] font-black text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800">
-                                    Captain: <span id="captain-a-name" class="text-amber-400">None</span>
+                                    Firepower: <span id="firepower-a">0</span> 🔥
                                 </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1 text-[9px] text-slate-400">
+                                <span class="bg-slate-900 px-1 py-0.5 rounded">Players: <strong id="count-a-players" class="text-white">0</strong></span>
+                                <span class="bg-slate-900 px-1 py-0.5 rounded">Power: <strong id="count-a-power" class="text-amber-400">0</strong></span>
+                                <span class="bg-slate-900 px-1 py-0.5 rounded">Fast: <strong id="count-a-fast" class="text-sky-400">0</strong></span>
+                                <span class="bg-slate-900 px-1 py-0.5 rounded">Bowlers: <strong id="count-a-bowlers" class="text-emerald-400">0</strong></span>
+                                <span class="bg-slate-900 px-1 py-0.5 rounded col-span-2">Deep: <strong id="count-a-deep" class="text-indigo-400">0</strong></span>
+                            </div>
+                            <div class="text-[9px] text-slate-400 bg-slate-900 px-1 py-0.5 rounded">
+                                Captain: <strong id="captain-a-name" class="text-amber-400">None</strong>
                             </div>
                         </div>
                         <div id="dropzone-Team A" class="flex flex-col gap-1 min-h-[140px] max-h-[220px] overflow-y-auto p-1 border border-dashed border-slate-800 rounded-lg no-scrollbar"></div>
                     </div>
 
+                    <!-- Team B Allocation Card -->
                     <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex flex-col gap-1.5">
                         <div class="pb-1.5 border-b border-slate-800 flex flex-col gap-1">
                             <div class="flex justify-between items-center">
                                 <span id="preview-team-b-title" class="font-bold text-[11px] text-amber-400">Team B</span>
                                 <span class="text-[9px] font-black text-amber-400 bg-amber-950 px-1.5 py-0.5 rounded border border-amber-800">
-                                    Captain: <span id="captain-b-name" class="text-amber-400">None</span>
+                                    Firepower: <span id="firepower-b">0</span> 🔥
                                 </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1 text-[9px] text-slate-400">
+                                <span class="bg-slate-900 px-1 py-0.5 rounded">Players: <strong id="count-b-players" class="text-white">0</strong></span>
+                                <span class="bg-slate-900 px-1 py-0.5 rounded">Power: <strong id="count-b-power" class="text-amber-400">0</strong></span>
+                                <span class="bg-slate-900 px-1 py-0.5 rounded">Fast: <strong id="count-b-fast" class="text-sky-400">0</strong></span>
+                                <span class="bg-slate-900 px-1 py-0.5 rounded">Bowlers: <strong id="count-b-bowlers" class="text-emerald-400">0</strong></span>
+                                <span class="bg-slate-900 px-1 py-0.5 rounded col-span-2">Deep: <strong id="count-b-deep" class="text-indigo-400">0</strong></span>
+                            </div>
+                            <div class="text-[9px] text-slate-400 bg-slate-900 px-1 py-0.5 rounded">
+                                Captain: <strong id="captain-b-name" class="text-amber-400">None</strong>
                             </div>
                         </div>
                         <div id="dropzone-Team B" class="flex flex-col gap-1 min-h-[140px] max-h-[220px] overflow-y-auto p-1 border border-dashed border-slate-800 rounded-lg no-scrollbar"></div>
                     </div>
+
                 </div>
 
                 <button onclick="confirmAndStartMatch()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl font-bold text-xs text-white transition shadow mt-0.5">
@@ -469,7 +493,7 @@
             battersList: {},
             bowlersList: {},
             fieldersList: {},
-            batterSectors: {} // Stores 4-quadrant run breakdown for each batter
+            batterSectors: {}
         };
 
         let undoStack = [];
@@ -544,6 +568,10 @@
                                 <input type="checkbox" ${p.skills?.B ? 'checked' : ''} onchange="toggleSkill(${index}, 'B', this.checked)" class="rounded bg-slate-900 border-slate-800 text-emerald-500 focus:ring-0 w-3 h-3">
                                 <span class="text-emerald-300">🌀B</span>
                             </label>
+                            <label class="flex items-center gap-0.5 cursor-pointer">
+                                <input type="checkbox" ${p.skills?.D ? 'checked' : ''} onchange="toggleSkill(${index}, 'D', this.checked)" class="rounded bg-slate-900 border-slate-800 text-indigo-500 focus:ring-0 w-3 h-3">
+                                <span class="text-indigo-300">🦅D</span>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -578,7 +606,7 @@
                     if (p.captainTeam === targetTeam && i !== index) p.captainTeam = null;
                 });
                 matchSetup.players[index].captainTeam = targetTeam;
-                matchSetup.players[index].team = targetTeam; // Lock captain to their team
+                matchSetup.players[index].team = targetTeam;
             } else {
                 matchSetup.players[index].captainTeam = null;
             }
@@ -616,6 +644,19 @@
             renderDragDropBoard();
         }
 
+        function calculateFirepower(teamKey) {
+            const players = matchSetup.players.filter(p => p.team === teamKey);
+            if (players.length === 0) return 0;
+            let score = 0;
+            players.forEach(p => {
+                if (p.skills?.P) score += 15;
+                if (p.skills?.F) score += 12;
+                if (p.skills?.B) score += 10;
+                if (p.skills?.D) score += 8;
+            });
+            return Math.min(100, Math.round((score / (players.length * 25)) * 100));
+        }
+
         function showTeamPreview() {
             matchSetup.date = document.getElementById('setup-date').value;
             matchSetup.matchNum = document.getElementById('setup-match-num').value || "Match 1";
@@ -634,12 +675,35 @@
             ['Team A', 'Team B'].forEach(cat => {
                 const zone = document.getElementById(`dropzone-${cat}`);
                 const players = matchSetup.players.filter(p => p.team === cat);
+
+                const powerCount = players.filter(p => p.skills?.P).length;
+                const fastCount = players.filter(p => p.skills?.F).length;
+                const totalBowlers = players.filter(p => p.skills?.F || p.skills?.B).length;
+                const deepCount = players.filter(p => p.skills?.D).length;
+                const firepower = calculateFirepower(cat);
                 const cap = players.find(p => p.captainTeam === cat);
 
                 if (cat === 'Team A') {
+                    document.getElementById('count-a-players').innerText = players.length;
+                    document.getElementById('count-a-power').innerText = powerCount;
+                    document.getElementById('count-a-fast').innerText = fastCount;
+                    document.getElementById('count-a-bowlers').innerText = totalBowlers;
+                    document.getElementById('count-a-deep').innerText = deepCount;
+                    document.getElementById('firepower-a').innerText = firepower;
                     document.getElementById('captain-a-name').innerText = cap ? cap.name : 'None';
                 } else {
+                    document.getElementById('count-b-players').innerText = players.length;
+                    document.getElementById('count-b-power').innerText = powerCount;
+                    document.getElementById('count-b-fast').innerText = fastCount;
+                    document.getElementById('count-b-bowlers').innerText = totalBowlers;
+                    document.getElementById('count-b-deep').innerText = deepCount;
+                    document.getElementById('firepower-b').innerText = firepower;
                     document.getElementById('captain-b-name').innerText = cap ? cap.name : 'None';
+                }
+
+                if (players.length === 0) {
+                    zone.innerHTML = `<span class="text-[9px] text-slate-600 italic p-2 text-center">No players</span>`;
+                    return;
                 }
 
                 zone.innerHTML = players.map(p => {
@@ -647,9 +711,16 @@
                     const isCap = (p.captainTeam === cat);
                     return `
                         <div class="bg-slate-900 border border-slate-800 p-1.5 rounded-lg flex justify-between items-center text-[11px]">
-                            <div class="flex items-center gap-1 overflow-hidden">
-                                <span class="font-bold text-slate-200 truncate">${p.name}</span>
-                                ${isCap ? '<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded font-bold">👑 Cap</span>' : ''}
+                            <div class="flex flex-col gap-0.5 overflow-hidden">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-bold text-slate-200 truncate">${p.name}</span>
+                                    ${isCap ? '<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded font-bold">👑 Cap</span>' : ''}
+                                </div>
+                                <div class="flex gap-1 text-[8px]">
+                                    ${p.skills?.P ? '<span class="text-amber-300">💥P</span>' : ''}
+                                    ${p.skills?.F ? '<span class="text-sky-300">⚡F</span>' : (p.skills?.B ? '<span class="text-emerald-300">🌀B</span>' : '')}
+                                    ${p.skills?.D ? '<span class="text-indigo-300">🦅D</span>' : ''}
+                                </div>
                             </div>
                             ${!isCap ? `<button onclick="quickMovePlayer(${originalIndex}, '${cat === 'Team A' ? 'Team B' : 'Team A'}')" class="text-[9px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-bold">⇄</button>` : '<span class="text-[9px] text-slate-500">Locked</span>'}
                         </div>
