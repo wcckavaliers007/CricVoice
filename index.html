@@ -49,14 +49,6 @@
             </div>
         </div>
 
-        <!-- Compressed Voice Button & Status -->
-        <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-0.5 rounded-lg border border-slate-800">
-            <button id="mic-btn" onclick="toggleListening()" class="w-6 h-6 rounded-md bg-emerald-600 hover:bg-emerald-500 flex items-center justify-center text-white text-[11px] shadow transition active:scale-95">
-                <i id="mic-icon" class="fa-solid fa-microphone"></i>
-            </button>
-            <span id="mic-status" class="text-[9px] text-slate-400 font-medium hidden sm:inline">Ready</span>
-        </div>
-
         <div class="flex items-center gap-1">
             <button onclick="toggleHistoryDrawer()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1">
                 <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
@@ -73,7 +65,7 @@
     <!-- Main Container -->
     <main class="flex-1 max-w-md w-full mx-auto p-2.5 pb-20 flex flex-col gap-2.5">
 
-        <!-- Compact Navigation Tabs -->
+        <!-- Navigation Tabs -->
         <div class="grid grid-cols-4 bg-slate-900 p-0.5 rounded-xl border border-slate-800 text-[11px] font-semibold w-full shadow">
             <button onclick="switchTab('setup')" id="tab-setup" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition">Roster</button>
             <button onclick="switchTab('live')" id="tab-live" class="py-1.5 rounded-lg bg-emerald-600 text-white transition shadow">Live</button>
@@ -83,10 +75,9 @@
 
         <!-- TAB 0: TEAM & PLAYER MAPPING SETUP -->
         <div id="view-setup" class="flex flex-col gap-2.5">
-            
             <div id="setup-step-1" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-lg flex flex-col gap-2.5 w-full">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
-                    <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider"><i class="fa-solid fa-people-group mr-1"></i>Master Roster & Skills</h2>
+                    <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider"><i class="fa-solid fa-people-group mr-1"></i>Master Roster & Captaincy</h2>
                     <span class="text-[9px] text-slate-400">Step 1 of 2</span>
                 </div>
 
@@ -117,12 +108,12 @@
                     <span class="text-amber-300">💥<strong>P</strong>(Bat)</span>
                     <span class="text-sky-300">⚡<strong>F</strong>(Fast)</span>
                     <span class="text-emerald-300">🌀<strong>B</strong>(Spin)</span>
-                    <span class="text-indigo-300">🦅<strong>D</strong>(Deep)</span>
+                    <span class="text-indigo-300">👑<strong>C</strong>(Captain)</span>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
                     <div class="flex justify-between items-center">
-                        <label class="text-[10px] font-medium text-slate-400 uppercase">Roster (<span id="total-roster-count">22</span>)</label>
+                        <label class="text-[10px] font-medium text-slate-400 uppercase">Roster (<span id="total-roster-count">23</span>)</label>
                         <button onclick="addPlayerRow()" class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-900 px-2 py-0.5 rounded transition">
                             <i class="fa-solid fa-plus mr-0.5"></i> Add
                         </button>
@@ -144,7 +135,7 @@
                         <button onclick="backToRosterInput()" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 px-2 py-0.5 rounded"><i class="fa-solid fa-pen mr-1"></i> Edit Roster</button>
                     </div>
                     <button onclick="autoBalanceTeams()" class="w-full text-[11px] bg-indigo-950 text-indigo-300 border border-indigo-800/80 hover:bg-indigo-900 py-1.5 rounded-lg font-semibold transition shadow">
-                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Auto-Balance (Power, Fast, Bowlers, Deep) ⚖️
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Auto-Balance (Captains Locked) ⚖️
                     </button>
                 </div>
 
@@ -154,15 +145,8 @@
                             <div class="flex justify-between items-center">
                                 <span id="preview-team-a-title" class="font-bold text-[11px] text-emerald-400">Team A</span>
                                 <span class="text-[9px] font-black text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800">
-                                    Power: <span id="firepower-a">0</span> 🔥
+                                    Captain: <span id="captain-a-name" class="text-amber-400">None</span>
                                 </span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-1 text-[9px] text-slate-400">
-                                <span class="bg-slate-900 px-1 py-0.5 rounded">Players: <strong id="count-a-players" class="text-white">0</strong></span>
-                                <span class="bg-slate-900 px-1 py-0.5 rounded">Power: <strong id="count-a-power" class="text-amber-400">0</strong></span>
-                                <span class="bg-slate-900 px-1 py-0.5 rounded">Fast: <strong id="count-a-fast" class="text-sky-400">0</strong></span>
-                                <span class="bg-slate-900 px-1 py-0.5 rounded">Bowlers: <strong id="count-a-bowlers" class="text-emerald-400">0</strong></span>
-                                <span class="bg-slate-900 px-1 py-0.5 rounded col-span-2">Deep: <strong id="count-a-deep" class="text-indigo-400">0</strong></span>
                             </div>
                         </div>
                         <div id="dropzone-Team A" class="flex flex-col gap-1 min-h-[140px] max-h-[220px] overflow-y-auto p-1 border border-dashed border-slate-800 rounded-lg no-scrollbar"></div>
@@ -173,15 +157,8 @@
                             <div class="flex justify-between items-center">
                                 <span id="preview-team-b-title" class="font-bold text-[11px] text-amber-400">Team B</span>
                                 <span class="text-[9px] font-black text-amber-400 bg-amber-950 px-1.5 py-0.5 rounded border border-amber-800">
-                                    Power: <span id="firepower-b">0</span> 🔥
+                                    Captain: <span id="captain-b-name" class="text-amber-400">None</span>
                                 </span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-1 text-[9px] text-slate-400">
-                                <span class="bg-slate-900 px-1 py-0.5 rounded">Players: <strong id="count-b-players" class="text-white">0</strong></span>
-                                <span class="bg-slate-900 px-1 py-0.5 rounded">Power: <strong id="count-b-power" class="text-amber-400">0</strong></span>
-                                <span class="bg-slate-900 px-1 py-0.5 rounded">Fast: <strong id="count-b-fast" class="text-sky-400">0</strong></span>
-                                <span class="bg-slate-900 px-1 py-0.5 rounded">Bowlers: <strong id="count-b-bowlers" class="text-emerald-400">0</strong></span>
-                                <span class="bg-slate-900 px-1 py-0.5 rounded col-span-2">Deep: <strong id="count-b-deep" class="text-indigo-400">0</strong></span>
                             </div>
                         </div>
                         <div id="dropzone-Team B" class="flex flex-col gap-1 min-h-[140px] max-h-[220px] overflow-y-auto p-1 border border-dashed border-slate-800 rounded-lg no-scrollbar"></div>
@@ -192,12 +169,10 @@
                     Freeze Teams & Start Match <i class="fa-solid fa-play ml-1"></i>
                 </button>
             </div>
-
         </div>
 
         <!-- TAB 1: LIVE ACTION -->
         <div id="view-live" class="hidden flex flex-col gap-2.5 w-full">
-            
             <div class="bg-gradient-to-br from-slate-900 to-slate-900/90 border border-slate-800 rounded-2xl p-3 shadow-lg relative overflow-hidden">
                 <div class="flex justify-between items-center mb-1.5">
                     <span id="live-match-title" class="text-[9px] uppercase tracking-wider text-emerald-400 font-bold px-2 py-0.5 bg-emerald-950 rounded-full border border-emerald-800/40">Team A vs Team B</span>
@@ -242,15 +217,20 @@
                 </div>
             </div>
 
-            <!-- Embedded Voice Help Accordion in Live Page -->
-            <div class="bg-indigo-950/40 border border-indigo-800/50 rounded-xl p-2">
+            <!-- Voice Help Accordion with Microphone Alongside Voice Guide Text -->
+            <div class="bg-indigo-950/40 border border-indigo-800/50 rounded-xl p-2.5">
                 <div class="flex justify-between items-center cursor-pointer" onclick="document.getElementById('live-voice-help').classList.toggle('hidden')">
-                    <span class="text-[11px] font-bold text-indigo-300 flex items-center gap-1">
-                        <i class="fa-solid fa-headset"></i> Voice Command Guide
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <button id="mic-btn" onclick="event.stopPropagation(); toggleListening();" class="w-6 h-6 rounded-md bg-emerald-600 hover:bg-emerald-500 flex items-center justify-center text-white text-[10px] shadow transition active:scale-95 shrink-0">
+                            <i id="mic-icon" class="fa-solid fa-microphone"></i>
+                        </button>
+                        <span class="text-[11px] font-bold text-indigo-300 flex items-center gap-1">
+                            Voice Command Guide & Mic (<span id="mic-status" class="text-emerald-400">Ready</span>)
+                        </span>
+                    </div>
                     <i class="fa-solid fa-chevron-down text-indigo-400 text-[10px]"></i>
                 </div>
-                <div id="live-voice-help" class="hidden mt-1.5 pt-1.5 border-t border-indigo-900/60 grid grid-cols-2 gap-2 text-[10px]">
+                <div id="live-voice-help" class="hidden mt-2 pt-2 border-t border-indigo-900/60 grid grid-cols-2 gap-2 text-[10px]">
                     <div class="bg-slate-950 p-1.5 rounded-lg">
                         <span class="font-bold text-emerald-400 block mb-0.5">Batting</span>
                         <p class="text-slate-300 font-mono text-[9px]">"Rajesh is batsman"</p>
@@ -288,7 +268,6 @@
                     <span class="text-[11px] text-slate-500 italic py-0.5">No balls bowled yet.</span>
                 </div>
             </div>
-
         </div>
 
         <!-- TAB 2: SCORECARD -->
@@ -363,15 +342,18 @@
                     </div>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-lg flex flex-col">
-                    <h3 class="text-[11px] font-bold mb-2 text-amber-400 uppercase tracking-wider"><i class="fa-solid fa-chart-pie mr-1"></i>Wagon Wheel Sectors</h3>
+                <!-- Wagon Wheel Card: Only shows when a batter is clicked -->
+                <div id="wagon-wheel-card" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-lg hidden flex-col">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 id="wagon-wheel-title" class="text-[11px] font-bold text-amber-400 uppercase tracking-wider"><i class="fa-solid fa-chart-pie mr-1"></i>Wagon Wheel</h3>
+                        <button onclick="closeWagonWheel()" class="text-[9px] text-slate-400 hover:text-white bg-slate-800 px-1.5 py-0.5 rounded">Close</button>
+                    </div>
                     <div class="h-44 relative">
                         <canvas id="wagonWheelChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
-
     </main>
 
     <!-- Voice Confirmation Modal -->
@@ -449,28 +431,29 @@
             teamB: "Team B",
             requireConfirmation: true,
             players: [
-                { name: "Arun", team: "Team A", skills: { P: true, F: true, B: false, D: true }, isCaptain: true },
-                { name: "Siva", team: "Team A", skills: { P: true, F: false, B: true, D: false }, isCaptain: false },
-                { name: "Jayanth", team: "Team A", skills: { P: true, F: true, B: false, D: false }, isCaptain: false },
-                { name: "CFO", team: "Team A", skills: { P: false, F: false, B: true, D: true }, isCaptain: false },
-                { name: "Prash", team: "Team A", skills: { P: false, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Ganesh", team: "Team A", skills: { P: true, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Johnny", team: "Team A", skills: { P: true, F: false, B: false, D: true }, isCaptain: false },
-                { name: "Danny", team: "Team A", skills: { P: false, F: true, B: false, D: false }, isCaptain: false },
-                { name: "Mahen", team: "Team A", skills: { P: true, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Sridhar", team: "Team B", skills: { P: false, F: false, B: true, D: false }, isCaptain: true },
-                { name: "Ponting", team: "Team B", skills: { P: false, F: false, B: false, D: true }, isCaptain: false },
-                { name: "Gucci", team: "Team B", skills: { P: false, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Rajesh", team: "Team B", skills: { P: true, F: false, B: true, D: false }, isCaptain: false },
-                { name: "Viswa", team: "Team B", skills: { P: false, F: false, B: false, D: false }, isCaptain: false },
-                { name: "Anand", team: "Team B", skills: { P: false, F: false, B: false, D: false }, isCaptain: false },
-                { name: "Ram", team: "Team B", skills: { P: false, F: false, B: false, D: false }, isCaptain: false },
-                { name: "Madhu", team: "Team B", skills: { P: false, F: false, B: true, D: false }, isCaptain: false },
-                { name: "Abhi", team: "Team B", skills: { P: false, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Puppy", team: "Team B", skills: { P: false, F: false, B: true, D: true }, isCaptain: false },
-                { name: "Juli", team: "Team B", skills: { P: false, F: true, B: false, D: true }, isCaptain: false },
-                { name: "Sesha", team: "Team B", skills: { P: false, F: false, B: false, D: true }, isCaptain: false },
-                { name: "PSS", team: "Team B", skills: { P: false, F: true, B: false, D: true }, isCaptain: false }
+                { name: "Arun", team: "Team A", skills: { P: true, F: true, B: false, D: true }, captainTeam: "Team A" },
+                { name: "Siva", team: "Team A", skills: { P: true, F: false, B: true, D: false }, captainTeam: null },
+                { name: "Jayanth", team: "Team A", skills: { P: true, F: true, B: false, D: false }, captainTeam: null },
+                { name: "CFO", team: "Team A", skills: { P: false, F: false, B: true, D: true }, captainTeam: null },
+                { name: "Prash", team: "Team A", skills: { P: false, F: true, B: false, D: true }, captainTeam: null },
+                { name: "Ganesh", team: "Team A", skills: { P: true, F: true, B: false, D: true }, captainTeam: null },
+                { name: "Johnny", team: "Team A", skills: { P: true, F: false, B: false, D: true }, captainTeam: null },
+                { name: "Danny", team: "Team A", skills: { P: false, F: true, B: false, D: false }, captainTeam: null },
+                { name: "Mahen", team: "Team A", skills: { P: true, F: true, B: false, D: true }, captainTeam: null },
+                { name: "Sridhar", team: "Team B", skills: { P: false, F: false, B: true, D: false }, captainTeam: "Team B" },
+                { name: "Ponting", team: "Team B", skills: { P: false, F: false, B: false, D: true }, captainTeam: null },
+                { name: "Gucci", team: "Team B", skills: { P: false, F: true, B: false, D: true }, captainTeam: null },
+                { name: "Rajesh", team: "Team B", skills: { P: true, F: false, B: true, D: false }, captainTeam: null },
+                { name: "Viswa", team: "Team B", skills: { P: false, F: false, B: false, D: false }, captainTeam: null },
+                { name: "Anand", team: "Team B", skills: { P: false, F: false, B: false, D: false }, captainTeam: null },
+                { name: "Ram", team: "Team B", skills: { P: false, F: false, B: false, D: false }, captainTeam: null },
+                { name: "Madhu", team: "Team B", skills: { P: false, F: false, B: true, D: false }, captainTeam: null },
+                { name: "Abhi", team: "Team B", skills: { P: false, F: true, B: false, D: true }, captainTeam: null },
+                { name: "Puppy", team: "Team B", skills: { P: false, F: false, B: true, D: true }, captainTeam: null },
+                { name: "Juli", team: "Team B", skills: { P: false, F: true, B: false, D: true }, captainTeam: null },
+                { name: "Sesha", team: "Team B", skills: { P: false, F: false, B: false, D: true }, captainTeam: null },
+                { name: "PSS", team: "Team B", skills: { P: false, F: true, B: false, D: true }, captainTeam: null },
+                { name: "Aaji", team: "Team B", skills: { P: true, F: true, B: false, D: true }, captainTeam: null }
             ]
         };
 
@@ -486,7 +469,7 @@
             battersList: {},
             bowlersList: {},
             fieldersList: {},
-            runSectors: { 'Off-Side': 35, 'On-Side': 40, 'Straight': 15, 'Fine/Third Man': 10 }
+            batterSectors: {} // Stores 4-quadrant run breakdown for each batter
         };
 
         let undoStack = [];
@@ -540,6 +523,11 @@
                             <option value="Team B" ${p.team === 'Team B' ? 'selected' : ''}>Team B</option>
                             <option value="Bench" ${p.team === 'Bench' ? 'selected' : ''}>Bench</option>
                         </select>
+                        <select onchange="updateCaptain(${index}, this.value)" class="bg-slate-900 text-amber-400 border border-slate-800 rounded px-1.5 py-0.5 text-[10px] focus:outline-none">
+                            <option value="none" ${!p.captainTeam ? 'selected' : ''}>No Cap</option>
+                            <option value="Team A" ${p.captainTeam === 'Team A' ? 'selected' : ''}>Cap A</option>
+                            <option value="Team B" ${p.captainTeam === 'Team B' ? 'selected' : ''}>Cap B</option>
+                        </select>
                         <button onclick="removePlayerRow(${index})" class="text-rose-400 hover:text-rose-300 p-0.5 text-xs"><i class="fa-solid fa-trash"></i></button>
                     </div>
                     <div class="flex flex-wrap items-center justify-between text-[10px] text-slate-400 pt-1 px-0.5 border-t border-slate-900 gap-1">
@@ -556,10 +544,6 @@
                                 <input type="checkbox" ${p.skills?.B ? 'checked' : ''} onchange="toggleSkill(${index}, 'B', this.checked)" class="rounded bg-slate-900 border-slate-800 text-emerald-500 focus:ring-0 w-3 h-3">
                                 <span class="text-emerald-300">🌀B</span>
                             </label>
-                            <label class="flex items-center gap-0.5 cursor-pointer">
-                                <input type="checkbox" ${p.skills?.D ? 'checked' : ''} onchange="toggleSkill(${index}, 'D', this.checked)" class="rounded bg-slate-900 border-slate-800 text-indigo-500 focus:ring-0 w-3 h-3">
-                                <span class="text-indigo-300">🦅D</span>
-                            </label>
                         </div>
                     </div>
                 </div>
@@ -567,7 +551,7 @@
         }
 
         function addPlayerRow() {
-            matchSetup.players.push({ name: "New Player", team: "Team A", skills: { P: false, F: false, B: false, D: false }, isCaptain: false });
+            matchSetup.players.push({ name: "New Player", team: "Team A", skills: { P: false, F: false, B: false, D: false }, captainTeam: null });
             renderPlayerMappingRows();
         }
 
@@ -577,7 +561,30 @@
         }
 
         function updatePlayerName(index, val) { matchSetup.players[index].name = val.trim(); }
-        function updatePlayerTeam(index, val) { matchSetup.players[index].team = val; }
+        function updatePlayerTeam(index, val) { 
+            const p = matchSetup.players[index];
+            if (p.captainTeam && val !== p.captainTeam) {
+                alert(`Cannot move ${p.name} because they are the designated captain for ${p.captainTeam}!`);
+                renderPlayerMappingRows();
+                return;
+            }
+            p.team = val; 
+        }
+
+        function updateCaptain(index, val) {
+            const targetTeam = val === 'none' ? null : val;
+            if (targetTeam) {
+                matchSetup.players.forEach((p, i) => {
+                    if (p.captainTeam === targetTeam && i !== index) p.captainTeam = null;
+                });
+                matchSetup.players[index].captainTeam = targetTeam;
+                matchSetup.players[index].team = targetTeam; // Lock captain to their team
+            } else {
+                matchSetup.players[index].captainTeam = null;
+            }
+            renderPlayerMappingRows();
+        }
+
         function toggleSkill(index, skillKey, val) {
             if (!matchSetup.players[index].skills) matchSetup.players[index].skills = {};
             if (skillKey === 'F' && val) matchSetup.players[index].skills.B = false;
@@ -587,32 +594,17 @@
         }
 
         function autoBalanceTeams() {
-            const active = matchSetup.players.filter(p => p.team !== 'Bench');
+            const capA = matchSetup.players.find(p => p.captainTeam === 'Team A');
+            const capB = matchSetup.players.find(p => p.captainTeam === 'Team B');
+
+            let teamA = capA ? [capA] : [];
+            let teamB = capB ? [capB] : [];
+
+            const active = matchSetup.players.filter(p => p.team !== 'Bench' && p !== capA && p !== capB);
             active.sort(() => Math.random() - 0.5);
 
-            let teamA = [];
-            let teamB = [];
-
             active.forEach(p => {
-                const powerA = teamA.filter(x => x.skills?.P).length;
-                const powerB = teamB.filter(x => x.skills?.P).length;
-                const fastA = teamA.filter(x => x.skills?.F).length;
-                const fastB = teamB.filter(x => x.skills?.F).length;
-                const bowlA = teamA.filter(x => x.skills?.F || x.skills?.B).length;
-                const bowlB = teamB.filter(x => x.skills?.F || x.skills?.B).length;
-                const deepA = teamA.filter(x => x.skills?.D).length;
-                const deepB = teamB.filter(x => x.skills?.D).length;
-
-                let scoreA = 0, scoreB = 0;
-                if (p.skills?.P) { if (powerA < powerB) scoreA += 3; else scoreB += 3; }
-                if (p.skills?.F) { if (fastA < fastB) scoreA += 3; else scoreB += 3; }
-                if (p.skills?.B || p.skills?.F) { if (bowlA < bowlB) scoreA += 2; else scoreB += 2; }
-                if (p.skills?.D) { if (deepA < deepB) scoreA += 2; else scoreB += 2; }
-
-                if (teamA.length < teamB.length) scoreA += 1;
-                else if (teamB.length < teamA.length) scoreB += 1;
-
-                if (scoreA >= scoreB) teamA.push(p);
+                if (teamA.length <= teamB.length) teamA.push(p);
                 else teamB.push(p);
             });
 
@@ -622,19 +614,6 @@
             });
 
             renderDragDropBoard();
-        }
-
-        function calculateFirepower(teamKey) {
-            const players = matchSetup.players.filter(p => p.team === teamKey);
-            if (players.length === 0) return 0;
-            let score = 0;
-            players.forEach(p => {
-                if (p.skills?.P) score += 15;
-                if (p.skills?.F) score += 12;
-                if (p.skills?.B) score += 10;
-                if (p.skills?.D) score += 8;
-            });
-            return Math.min(100, Math.round((score / (players.length * 25)) * 100));
         }
 
         function showTeamPreview() {
@@ -655,64 +634,52 @@
             ['Team A', 'Team B'].forEach(cat => {
                 const zone = document.getElementById(`dropzone-${cat}`);
                 const players = matchSetup.players.filter(p => p.team === cat);
-
-                const powerCount = players.filter(p => p.skills?.P).length;
-                const fastCount = players.filter(p => p.skills?.F).length;
-                const totalBowlers = players.filter(p => p.skills?.F || p.skills?.B).length;
-                const deepCount = players.filter(p => p.skills?.D).length;
-                const firepower = calculateFirepower(cat);
+                const cap = players.find(p => p.captainTeam === cat);
 
                 if (cat === 'Team A') {
-                    document.getElementById('count-a-players').innerText = players.length;
-                    document.getElementById('count-a-power').innerText = powerCount;
-                    document.getElementById('count-a-fast').innerText = fastCount;
-                    document.getElementById('count-a-bowlers').innerText = totalBowlers;
-                    document.getElementById('count-a-deep').innerText = deepCount;
-                    document.getElementById('firepower-a').innerText = firepower;
+                    document.getElementById('captain-a-name').innerText = cap ? cap.name : 'None';
                 } else {
-                    document.getElementById('count-b-players').innerText = players.length;
-                    document.getElementById('count-b-power').innerText = powerCount;
-                    document.getElementById('count-b-fast').innerText = fastCount;
-                    document.getElementById('count-b-bowlers').innerText = totalBowlers;
-                    document.getElementById('count-b-deep').innerText = deepCount;
-                    document.getElementById('firepower-b').innerText = firepower;
-                }
-
-                if (players.length === 0) {
-                    zone.innerHTML = `<span class="text-[9px] text-slate-600 italic p-2 text-center">No players</span>`;
-                    return;
+                    document.getElementById('captain-b-name').innerText = cap ? cap.name : 'None';
                 }
 
                 zone.innerHTML = players.map(p => {
                     const originalIndex = matchSetup.players.indexOf(p);
+                    const isCap = (p.captainTeam === cat);
                     return `
                         <div class="bg-slate-900 border border-slate-800 p-1.5 rounded-lg flex justify-between items-center text-[11px]">
-                            <div class="flex flex-col gap-0.5 overflow-hidden">
+                            <div class="flex items-center gap-1 overflow-hidden">
                                 <span class="font-bold text-slate-200 truncate">${p.name}</span>
-                                <div class="flex gap-1 text-[8px]">
-                                    ${p.skills?.P ? '<span class="text-amber-300">💥P</span>' : ''}
-                                    ${p.skills?.F ? '<span class="text-sky-300">⚡F</span>' : (p.skills?.B ? '<span class="text-emerald-300">🌀B</span>' : '')}
-                                    ${p.skills?.D ? '<span class="text-indigo-300">🦅D</span>' : ''}
-                                </div>
+                                ${isCap ? '<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded font-bold">👑 Cap</span>' : ''}
                             </div>
-                            <button onclick="quickMovePlayer(${originalIndex}, '${cat === 'Team A' ? 'Team B' : 'Team A'}')" class="text-[9px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-bold">⇄</button>
+                            ${!isCap ? `<button onclick="quickMovePlayer(${originalIndex}, '${cat === 'Team A' ? 'Team B' : 'Team A'}')" class="text-[9px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-bold">⇄</button>` : '<span class="text-[9px] text-slate-500">Locked</span>'}
                         </div>
                     `;
                 }).join('');
             });
         }
 
-        function quickMovePlayer(index, targetTeam) { matchSetup.players[index].team = targetTeam; renderDragDropBoard(); }
+        function quickMovePlayer(index, targetTeam) {
+            const p = matchSetup.players[index];
+            if (p.captainTeam) {
+                alert(`Cannot move ${p.name} because they are the team captain!`);
+                return;
+            }
+            matchSetup.players[index].team = targetTeam; 
+            renderDragDropBoard(); 
+        }
+
         function backToRosterInput() { document.getElementById('setup-step-2').classList.add('hidden'); document.getElementById('setup-step-1').classList.remove('hidden'); }
 
         function confirmAndStartMatch() {
             matchState.battersList = {};
             matchState.bowlersList = {};
             matchState.fieldersList = {};
+            matchState.batterSectors = {};
 
             matchSetup.players.forEach(p => {
                 if (p.team === 'Team A') {
                     matchState.battersList[p.name] = { runs: 0, balls: 0, fours: 0, sixes: 0, status: 'Yet to Bat', dismissal: '' };
+                    matchState.batterSectors[p.name] = { 'Off-Side (Front)': 0, 'On-Side (Front)': 0, 'Straight': 0, 'Behind Wicket (Third/Fine)': 0 };
                 } else if (p.team === 'Team B') {
                     matchState.bowlersList[p.name] = { legalBalls: 0, runs: 0, wickets: 0 };
                 }
@@ -793,6 +760,7 @@
             matchState.striker.name = matchedName;
             if (!matchState.battersList[matchedName]) {
                 matchState.battersList[matchedName] = { runs: 0, balls: 0, fours: 0, sixes: 0, status: 'Batting', dismissal: '' };
+                matchState.batterSectors[matchedName] = { 'Off-Side (Front)': 0, 'On-Side (Front)': 0, 'Straight': 0, 'Behind Wicket (Third/Fine)': 0 };
             } else {
                 matchState.battersList[matchedName].status = 'Batting';
             }
@@ -917,6 +885,16 @@
             } else if (parsed.runs === 4) {
                 matchState.striker.fours++;
                 confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+            }
+
+            if (parsed.runs > 0) {
+                const sName = matchState.striker.name;
+                if (!matchState.batterSectors[sName]) {
+                    matchState.batterSectors[sName] = { 'Off-Side (Front)': 0, 'On-Side (Front)': 0, 'Straight': 0, 'Behind Wicket (Third/Fine)': 0 };
+                }
+                const sectors = Object.keys(matchState.batterSectors[sName]);
+                const randomSector = sectors[Math.floor(Math.random() * sectors.length)];
+                matchState.batterSectors[sName][randomSector] += parsed.runs;
             }
 
             if (parsed.extraType === 'wide') {
@@ -1055,7 +1033,7 @@
                 else if (data.status === 'Out') statusHtml = `<span class="text-rose-400 font-medium">${data.dismissal}</span>`;
 
                 return `<tr class="border-b border-slate-900/50">
-                    <td class="py-1.5 font-bold text-slate-200">${name}</td>
+                    <td class="py-1.5 font-bold text-slate-200 cursor-pointer hover:text-emerald-400" onclick="showWagonWheel('${name}')">${name} 📊</td>
                     <td class="py-1.5 text-[10px]">${statusHtml}</td>
                     <td class="py-1.5 text-center font-bold text-white">${data.runs}</td>
                     <td class="py-1.5 text-center text-slate-400">${data.balls}</td>
@@ -1083,6 +1061,7 @@
             ['batters', 'bowlers', 'fielders'].forEach(s => {
                 document.getElementById(`subtab-${s}`).className = (s === sub) ? "py-1.5 rounded-lg bg-emerald-600 text-white transition" : "py-1.5 rounded-lg text-slate-400 hover:text-white transition";
             });
+            document.getElementById('wagon-wheel-card').classList.add('hidden');
             updateAnalyticsCharts();
         }
 
@@ -1098,9 +1077,9 @@
             wagonWheelChart = new Chart(ctx2, {
                 type: 'pie',
                 data: {
-                    labels: ['Off-Side', 'On-Side', 'Straight', 'Third Man'],
+                    labels: ['Off-Side (Front)', 'On-Side (Front)', 'Straight', 'Behind Wicket (Third/Fine)'],
                     datasets: [{
-                        data: [35, 40, 15, 10],
+                        data: [0, 0, 0, 0],
                         backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6']
                     }]
                 },
@@ -1108,11 +1087,26 @@
             });
         }
 
+        function showWagonWheel(batterName) {
+            switchTab('analytics');
+            switchAnalyticsSubTab('batters');
+            document.getElementById('wagon-wheel-card').classList.remove('hidden');
+            document.getElementById('wagon-wheel-title').innerText = `Wagon Wheel: ${batterName}`;
+
+            const sectors = matchState.batterSectors[batterName] || { 'Off-Side (Front)': 0, 'On-Side (Front)': 0, 'Straight': 0, 'Behind Wicket (Third/Fine)': 0 };
+            wagonWheelChart.data.datasets[0].data = Object.values(sectors);
+            wagonWheelChart.update();
+        }
+
+        function closeWagonWheel() {
+            document.getElementById('wagon-wheel-card').classList.add('hidden');
+        }
+
         function updateAnalyticsCharts() {
             if (!analyticsChart) return;
 
             if (currentAnalyticsSubTab === 'batters') {
-                document.getElementById('analytics-title').innerText = "Batsmen Runs";
+                document.getElementById('analytics-title').innerText = "Batsmen Runs (Click batter for Wagon Wheel)";
                 analyticsChart.data.labels = Object.keys(matchState.battersList);
                 analyticsChart.data.datasets = [{ label: 'Runs', data: Object.values(matchState.battersList).map(b => b.runs), backgroundColor: '#10b981' }];
             } else if (currentAnalyticsSubTab === 'bowlers') {
@@ -1129,7 +1123,6 @@
                 ];
             }
             analyticsChart.update();
-            if (wagonWheelChart) wagonWheelChart.update();
         }
 
         function saveCurrentMatchToHistory() {
